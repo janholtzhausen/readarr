@@ -1,15 +1,12 @@
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
-import { Grid, WindowScroller } from 'react-virtualized';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { FixedSizeList } from 'react-window';
 import BookIndexItemConnector from 'Book/Index/BookIndexItemConnector';
 import Measure from 'Components/Measure';
 import dimensions from 'Styles/Variables/dimensions';
 import getIndexOfFirstCharacter from 'Utilities/Array/getIndexOfFirstCharacter';
-import hasDifferentItemsOrOrder from 'Utilities/Object/hasDifferentItemsOrOrder';
 import BookIndexOverview from './BookIndexOverview';
-import styles from './BookIndexOverviews.css';
 
-// Poster container dimensions
 const columnPadding = parseInt(dimensions.authorIndexColumnPadding);
 const columnPaddingSmallScreen = parseInt(dimensions.authorIndexColumnPaddingSmallScreen);
 const progressBarHeight = parseInt(dimensions.progressBarSmallHeight);
@@ -29,152 +26,103 @@ function calculatePosterWidth(posterSize, isSmallScreen) {
   return Math.floor(maxiumPosterWidth * 0.5);
 }
 
-function calculateRowHeight(posterHeight, sortKey, isSmallScreen, overviewOptions) {
-  const {
-    detailedProgressBar
-  } = overviewOptions;
+function calculateRowHeight(posterHeight, isSmallScreen, overviewOptions) {
+  const { detailedProgressBar } = overviewOptions;
 
-  const heights = [
+  return [
     posterHeight,
     detailedProgressBar ? detailedProgressBarHeight : progressBarHeight,
     isSmallScreen ? columnPaddingSmallScreen : columnPadding
-  ];
-
-  return heights.reduce((acc, height) => acc + height, 0);
+  ].reduce((acc, height) => acc + height, 0);
 }
 
 function calculatePosterHeight(posterWidth) {
   return Math.ceil((400 / 256) * posterWidth);
 }
 
-class BookIndexOverviews extends Component {
+function getWindowScrollTopPosition() {
+  return document.documentElement.scrollTop || document.body.scrollTop || 0;
+}
 
-  //
-  // Lifecycle
+function BookIndexOverviews(props) {
+  const {
+    items,
+    sortKey,
+    overviewOptions,
+    jumpToCharacter,
+    scrollTop,
+    showRelativeDates,
+    shortDateFormat,
+    longDateFormat,
+    timeFormat,
+    isSmallScreen,
+    scroller,
+    selectedState,
+    isEditorActive,
+    onSelectedChange
+  } = props;
 
-  constructor(props, context) {
-    super(props, context);
+  const listRef = useRef(null);
+  const [width, setWidth] = useState(0);
 
-    this.state = {
-      width: 0,
-      columnCount: 1,
-      posterWidth: 162,
-      posterHeight: 253,
-      rowHeight: calculateRowHeight(253, null, props.isSmallScreen, {}),
-      scrollRestored: false
+  const posterWidth = useMemo(() => {
+    return calculatePosterWidth(overviewOptions.size, isSmallScreen);
+  }, [overviewOptions.size, isSmallScreen]);
+
+  const posterHeight = useMemo(() => calculatePosterHeight(posterWidth), [posterWidth]);
+  const rowHeight = useMemo(() => {
+    return calculateRowHeight(posterHeight, isSmallScreen, overviewOptions);
+  }, [posterHeight, isSmallScreen, overviewOptions]);
+
+  useEffect(() => {
+    if (scrollTop && listRef.current) {
+      listRef.current.scrollTo(scrollTop);
+    }
+  }, [scrollTop]);
+
+  useEffect(() => {
+    if (jumpToCharacter == null || !listRef.current) {
+      return;
+    }
+
+    const index = getIndexOfFirstCharacter(items, sortKey, jumpToCharacter);
+
+    if (index != null) {
+      listRef.current.scrollToItem(index, 'start');
+    }
+  }, [items, sortKey, jumpToCharacter]);
+
+  useEffect(() => {
+    if (!scroller) {
+      return undefined;
+    }
+
+    const currentScrollListener = isSmallScreen ? window : scroller;
+
+    const handleScroll = () => {
+      const { offsetTop = 0 } = scroller;
+      const nextScrollTop =
+        (isSmallScreen ? getWindowScrollTopPosition() : scroller.scrollTop) - offsetTop;
+
+      listRef.current?.scrollTo(nextScrollTop);
     };
 
-    this._grid = null;
-  }
+    currentScrollListener.addEventListener('scroll', handleScroll);
 
-  componentDidUpdate(prevProps, prevState) {
-    const {
-      items,
-      sortKey,
-      overviewOptions,
-      jumpToCharacter,
-      scrollTop,
-      isEditorActive,
-      selectedState
-    } = this.props;
+    return () => {
+      currentScrollListener.removeEventListener('scroll', handleScroll);
+    };
+  }, [isSmallScreen, scroller]);
 
-    const {
-      width,
-      rowHeight,
-      scrollRestored
-    } = this.state;
-
-    if (prevProps.sortKey !== sortKey ||
-        prevProps.overviewOptions !== overviewOptions) {
-      this.calculateGrid();
-    }
-
-    if (this._grid &&
-        (prevState.width !== width ||
-            prevState.rowHeight !== rowHeight ||
-            hasDifferentItemsOrOrder(prevProps.items, items) ||
-            prevProps.isEditorActive !== isEditorActive ||
-            prevProps.selectedState !== selectedState ||
-            prevProps.overviewOptions !== overviewOptions)) {
-      // recomputeGridSize also forces Grid to discard its cache of rendered cells
-      this._grid.recomputeGridSize();
-    }
-
-    if (this._grid && scrollTop !== 0 && !scrollRestored) {
-      this.setState({ scrollRestored: true });
-      this._grid.scrollToPosition({ scrollTop });
-    }
-
-    if (jumpToCharacter != null && jumpToCharacter !== prevProps.jumpToCharacter) {
-      const index = getIndexOfFirstCharacter(items, sortKey, jumpToCharacter);
-
-      if (this._grid && index != null) {
-
-        this._grid.scrollToCell({
-          rowIndex: index,
-          columnIndex: 0
-        });
-      }
-    }
-  }
-
-  //
-  // Control
-
-  setGridRef = (ref) => {
-    this._grid = ref;
-  };
-
-  calculateGrid = (width = this.state.width, isSmallScreen) => {
-    const {
-      sortKey,
-      overviewOptions
-    } = this.props;
-
-    const posterWidth = calculatePosterWidth(overviewOptions.size, isSmallScreen);
-    const posterHeight = calculatePosterHeight(posterWidth);
-    const rowHeight = calculateRowHeight(posterHeight, sortKey, isSmallScreen, overviewOptions);
-
-    this.setState({
-      width,
-      posterWidth,
-      posterHeight,
-      rowHeight
-    });
-  };
-
-  cellRenderer = ({ key, rowIndex, style }) => {
-    const {
-      items,
-      sortKey,
-      overviewOptions,
-      showRelativeDates,
-      shortDateFormat,
-      longDateFormat,
-      timeFormat,
-      isSmallScreen,
-      selectedState,
-      isEditorActive,
-      onSelectedChange
-    } = this.props;
-
-    const {
-      posterWidth,
-      posterHeight,
-      rowHeight
-    } = this.state;
-
-    const book = items[rowIndex];
+  const rowRenderer = ({ index, style }) => {
+    const book = items[index];
 
     if (!book) {
       return null;
     }
 
     return (
-      <div
-        key={key}
-        style={style}
-      >
+      <div style={style}>
         <BookIndexItemConnector
           key={book.id}
           component={BookIndexOverview}
@@ -198,85 +146,45 @@ class BookIndexOverviews extends Component {
     );
   };
 
-  //
-  // Listeners
-
-  onMeasure = ({ width }) => {
-    this.calculateGrid(width, this.props.isSmallScreen);
-  };
-
-  //
-  // Render
-
-  render() {
-    const {
-      items,
-      isSmallScreen,
-      scroller
-    } = this.props;
-
-    const {
-      width,
-      rowHeight
-    } = this.state;
-
-    return (
-      <Measure
-        onMeasure={this.onMeasure}
-      >
-        <WindowScroller
-          scrollElement={isSmallScreen ? undefined : scroller}
-        >
-          {({ height, registerChild, onChildScroll, scrollTop }) => {
-            if (!height) {
-              return <div />;
-            }
-
-            return (
-              <div ref={registerChild}>
-                <Grid
-                  ref={this.setGridRef}
-                  className={styles.grid}
-                  autoHeight={true}
-                  height={height}
-                  columnCount={1}
-                  columnWidth={width}
-                  rowCount={items.length}
-                  rowHeight={rowHeight}
-                  width={width}
-                  onScroll={onChildScroll}
-                  scrollTop={scrollTop}
-                  overscanRowCount={2}
-                  cellRenderer={this.cellRenderer}
-                  onSectionRendered={this.onSectionRendered}
-                  scrollToAlignment={'start'}
-                  isScrollingOptOut={true}
-                />
-              </div>
-            );
-          }
-          }
-        </WindowScroller>
-      </Measure>
-    );
-  }
+  return (
+    <Measure onMeasure={({ width: nextWidth }) => setWidth(nextWidth)}>
+      {
+        width > 0 ?
+          <FixedSizeList
+            ref={listRef}
+            style={{
+              width: '100%',
+              overflowX: 'hidden',
+              overflowY: 'hidden'
+            }}
+            width={width}
+            height={window.innerHeight}
+            itemCount={items.length}
+            itemSize={rowHeight}
+          >
+            {rowRenderer}
+          </FixedSizeList> :
+          <div />
+      }
+    </Measure>
+  );
 }
 
 BookIndexOverviews.propTypes = {
   items: PropTypes.arrayOf(PropTypes.object).isRequired,
-  sortKey: PropTypes.string,
+  sortKey: PropTypes.string.isRequired,
   overviewOptions: PropTypes.object.isRequired,
-  scrollTop: PropTypes.number.isRequired,
   jumpToCharacter: PropTypes.string,
-  scroller: PropTypes.instanceOf(Element).isRequired,
+  scrollTop: PropTypes.number,
   showRelativeDates: PropTypes.bool.isRequired,
   shortDateFormat: PropTypes.string.isRequired,
   longDateFormat: PropTypes.string.isRequired,
-  isSmallScreen: PropTypes.bool.isRequired,
   timeFormat: PropTypes.string.isRequired,
+  isSmallScreen: PropTypes.bool.isRequired,
+  scroller: PropTypes.instanceOf(Element).isRequired,
   selectedState: PropTypes.object.isRequired,
-  onSelectedChange: PropTypes.func.isRequired,
-  isEditorActive: PropTypes.bool.isRequired
+  isEditorActive: PropTypes.bool.isRequired,
+  onSelectedChange: PropTypes.func.isRequired
 };
 
 export default BookIndexOverviews;

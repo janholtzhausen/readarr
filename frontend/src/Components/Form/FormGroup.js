@@ -5,16 +5,14 @@ import { map } from 'Helpers/elementChildren';
 import { sizes } from 'Helpers/Props';
 import styles from './FormGroup.css';
 
-function FormGroup(props) {
-  const {
-    className,
-    children,
-    size,
-    advancedSettings,
-    isAdvanced,
-    ...otherProps
-  } = props;
-
+function FormGroup({
+  className = styles.group,
+  children,
+  size = sizes.SMALL,
+  advancedSettings = false,
+  isAdvanced = false,
+  ...otherProps
+}) {
   if (!advancedSettings && isAdvanced) {
     return null;
   }
@@ -39,18 +37,11 @@ function FormGroup(props) {
 }
 
 FormGroup.propTypes = {
-  className: PropTypes.string.isRequired,
+  className: PropTypes.string,
   children: PropTypes.node.isRequired,
-  size: PropTypes.oneOf(sizes.all).isRequired,
-  advancedSettings: PropTypes.bool.isRequired,
-  isAdvanced: PropTypes.bool.isRequired
-};
-
-FormGroup.defaultProps = {
-  className: styles.group,
-  size: sizes.SMALL,
-  advancedSettings: false,
-  isAdvanced: false
+  size: PropTypes.oneOf(sizes.all),
+  advancedSettings: PropTypes.bool,
+  isAdvanced: PropTypes.bool
 };
 
 export default FormGroup;

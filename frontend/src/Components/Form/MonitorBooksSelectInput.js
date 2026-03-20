@@ -4,14 +4,12 @@ import monitorOptions from 'Utilities/Author/monitorOptions';
 import translate from 'Utilities/String/translate';
 import SelectInput from './SelectInput';
 
-function MonitorBooksSelectInput(props) {
-  const {
-    includeNoChange,
-    includeMixed,
-    includeSpecificBook,
-    ...otherProps
-  } = props;
-
+function MonitorBooksSelectInput({
+  includeNoChange = false,
+  includeMixed = false,
+  includeSpecificBook = false,
+  ...otherProps
+}) {
   const values = [...monitorOptions];
 
   if (includeNoChange) {
@@ -46,16 +44,10 @@ function MonitorBooksSelectInput(props) {
 }
 
 MonitorBooksSelectInput.propTypes = {
-  includeNoChange: PropTypes.bool.isRequired,
-  includeMixed: PropTypes.bool.isRequired,
-  includeSpecificBook: PropTypes.bool.isRequired,
+  includeNoChange: PropTypes.bool,
+  includeMixed: PropTypes.bool,
+  includeSpecificBook: PropTypes.bool,
   onChange: PropTypes.func.isRequired
-};
-
-MonitorBooksSelectInput.defaultProps = {
-  includeNoChange: false,
-  includeMixed: false,
-  includeSpecificBook: false
 };
 
 export default MonitorBooksSelectInput;

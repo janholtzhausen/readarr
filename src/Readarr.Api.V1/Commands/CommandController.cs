@@ -49,7 +49,7 @@ namespace Readarr.Api.V1.Commands
         }
 
         [RestPostById]
-        public ActionResult<CommandResource> StartCommand(CommandResource commandResource)
+        public ActionResult<CommandResource> StartCommand([FromBody] CommandResource commandResource)
         {
             var commandType =
                 _knownTypes.GetImplementations(typeof(Command))

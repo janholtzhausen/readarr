@@ -34,16 +34,14 @@ function getDetailedPopoverBody(statusMessages) {
   );
 }
 
-function QueueStatusCell(props) {
-  const {
-    sourceTitle,
-    status,
-    trackedDownloadStatus,
-    trackedDownloadState,
-    statusMessages,
-    errorMessage
-  } = props;
-
+function QueueStatusCell({
+  sourceTitle,
+  status,
+  trackedDownloadStatus = 'Ok',
+  trackedDownloadState = 'Downloading',
+  statusMessages,
+  errorMessage
+}) {
   const hasWarning = trackedDownloadStatus === 'warning';
   const hasError = trackedDownloadStatus === 'error';
 
@@ -142,15 +140,10 @@ function QueueStatusCell(props) {
 QueueStatusCell.propTypes = {
   sourceTitle: PropTypes.string.isRequired,
   status: PropTypes.string.isRequired,
-  trackedDownloadStatus: PropTypes.string.isRequired,
-  trackedDownloadState: PropTypes.string.isRequired,
+  trackedDownloadStatus: PropTypes.string,
+  trackedDownloadState: PropTypes.string,
   statusMessages: PropTypes.arrayOf(PropTypes.object),
   errorMessage: PropTypes.string
-};
-
-QueueStatusCell.defaultProps = {
-  trackedDownloadStatus: 'Ok',
-  trackedDownloadState: 'Downloading'
 };
 
 export default QueueStatusCell;

@@ -4,7 +4,7 @@ import Icon from 'Components/Icon';
 import { icons } from 'Helpers/Props';
 import styles from './StarRating.css';
 
-function StarRating({ rating, votes, iconSize }) {
+function StarRating({ rating, votes, iconSize = 14 }) {
   const starWidth = {
     width: `${rating * 20}%`
   };
@@ -34,11 +34,7 @@ function StarRating({ rating, votes, iconSize }) {
 StarRating.propTypes = {
   rating: PropTypes.number.isRequired,
   votes: PropTypes.number.isRequired,
-  iconSize: PropTypes.number.isRequired
-};
-
-StarRating.defaultProps = {
-  iconSize: 14
+  iconSize: PropTypes.number
 };
 
 export default StarRating;

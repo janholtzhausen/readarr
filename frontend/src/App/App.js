@@ -1,25 +1,25 @@
-import { ConnectedRouter } from 'connected-react-router';
 import PropTypes from 'prop-types';
 import React from 'react';
-import DocumentTitle from 'react-document-title';
 import { Provider } from 'react-redux';
 import PageConnector from 'Components/Page/PageConnector';
+import { Router } from 'Components/Router/RouterContext';
+import useDocumentTitle from 'Utilities/useDocumentTitle';
 import ApplyTheme from './ApplyTheme';
 import AppRoutes from './AppRoutes';
 
 function App({ store, history }) {
+  useDocumentTitle();
+
   return (
-    <DocumentTitle title={window.Readarr.instanceName}>
-      <Provider store={store}>
-        <ConnectedRouter history={history}>
-          <ApplyTheme>
-            <PageConnector>
-              <AppRoutes app={App} />
-            </PageConnector>
-          </ApplyTheme>
-        </ConnectedRouter>
-      </Provider>
-    </DocumentTitle>
+    <Provider store={store}>
+      <Router history={history}>
+        <ApplyTheme>
+          <PageConnector>
+            <AppRoutes app={App} />
+          </PageConnector>
+        </ApplyTheme>
+      </Router>
+    </Provider>
   );
 }
 

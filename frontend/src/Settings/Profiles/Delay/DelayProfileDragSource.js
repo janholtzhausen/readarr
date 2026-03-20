@@ -1,148 +1,125 @@
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
-import { DragSource, DropTarget } from 'react-dnd';
-import { findDOMNode } from 'react-dom';
+import React, { cloneElement, useCallback, useRef } from 'react';
+import { useDrag, useDrop } from 'react-dnd';
 import { DELAY_PROFILE } from 'Helpers/dragTypes';
 import DelayProfile from './DelayProfile';
 import styles from './DelayProfileDragSource.css';
 
-const delayProfileDragSource = {
-  beginDrag(item) {
-    return item;
-  },
+function DelayProfileDragSource(props) {
+  const {
+    id,
+    order,
+    isDraggingUp,
+    isDraggingDown,
+    onDelayProfileDragMove,
+    onDelayProfileDragEnd,
+    ...otherProps
+  } = props;
 
-  endDrag(props, monitor, component) {
-    props.onDelayProfileDragEnd(monitor.getItem(), monitor.didDrop());
-  }
-};
+  const ref = useRef(null);
 
-const delayProfileDropTarget = {
-  hover(props, monitor, component) {
-    const dragIndex = monitor.getItem().order;
-    const hoverIndex = props.order;
+  const [{ isOver }, dropRef] = useDrop({
+    accept: DELAY_PROFILE,
+    collect: (monitor) => ({
+      isOver: monitor.isOver()
+    }),
+    hover(item, monitor) {
+      if (!ref.current) {
+        return;
+      }
 
-    const hoverBoundingRect = findDOMNode(component).getBoundingClientRect();
-    const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
-    const clientOffset = monitor.getClientOffset();
-    const hoverClientY = clientOffset.y - hoverBoundingRect.top;
+      const dragIndex = item.order;
+      const hoverIndex = order;
 
-    if (dragIndex === hoverIndex) {
-      return;
+      if (dragIndex === hoverIndex) {
+        return;
+      }
+
+      const hoverBoundingRect = ref.current.getBoundingClientRect();
+      const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
+      const clientOffset = monitor.getClientOffset();
+      const hoverClientY = clientOffset.y - hoverBoundingRect.top;
+
+      if (dragIndex < hoverIndex && hoverClientY > hoverMiddleY) {
+        onDelayProfileDragMove(dragIndex, hoverIndex + 1);
+      } else if (dragIndex > hoverIndex && hoverClientY < hoverMiddleY) {
+        onDelayProfileDragMove(dragIndex, hoverIndex);
+      }
     }
+  });
 
-    // When moving up, only trigger if drag position is above 50% and
-    // when moving down, only trigger if drag position is below 50%.
-    // If we're moving down the hoverIndex needs to be increased
-    // by one so it's ordered properly. Otherwise the hoverIndex will work.
-
-    if (dragIndex < hoverIndex && hoverClientY > hoverMiddleY) {
-      props.onDelayProfileDragMove(dragIndex, hoverIndex + 1);
-    } else if (dragIndex > hoverIndex && hoverClientY < hoverMiddleY) {
-      props.onDelayProfileDragMove(dragIndex, hoverIndex);
-    }
-  }
-};
-
-function collectDragSource(connect, monitor) {
-  return {
-    connectDragSource: connect.dragSource(),
-    isDragging: monitor.isDragging()
-  };
-}
-
-function collectDropTarget(connect, monitor) {
-  return {
-    connectDropTarget: connect.dropTarget(),
-    isOver: monitor.isOver()
-  };
-}
-
-class DelayProfileDragSource extends Component {
-
-  //
-  // Render
-
-  render() {
-    const {
+  const [{ isDragging }, dragRef] = useDrag({
+    type: DELAY_PROFILE,
+    item: () => ({
       id,
-      order,
-      isDragging,
-      isDraggingUp,
-      isDraggingDown,
-      isOver,
-      connectDragSource,
-      connectDropTarget,
-      ...otherProps
-    } = this.props;
+      order
+    }),
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging()
+    }),
+    end: (item, monitor) => {
+      onDelayProfileDragEnd(item, monitor.didDrop());
+    }
+  });
 
-    const isBefore = !isDragging && isDraggingUp && isOver;
-    const isAfter = !isDragging && isDraggingDown && isOver;
+  const connectDragSource = useCallback((element) => {
+    return cloneElement(element, { ref: dragRef });
+  }, [dragRef]);
 
-    // if (isDragging && !isOver) {
-    //   return null;
-    // }
+  dropRef(ref);
 
-    return connectDropTarget(
-      <div
-        className={classNames(
-          styles.delayProfileDragSource,
-          isBefore && styles.isDraggingUp,
-          isAfter && styles.isDraggingDown
-        )}
-      >
-        {
-          isBefore &&
-            <div
-              className={classNames(
-                styles.delayProfilePlaceholder,
-                styles.delayProfilePlaceholderBefore
-              )}
-            />
-        }
+  const isBefore = !isDragging && isDraggingUp && isOver;
+  const isAfter = !isDragging && isDraggingDown && isOver;
 
-        <DelayProfile
-          id={id}
-          order={order}
-          isDragging={isDragging}
-          isOver={isOver}
-          {...otherProps}
-          connectDragSource={connectDragSource}
-        />
+  return (
+    <div
+      ref={ref}
+      className={classNames(
+        styles.delayProfileDragSource,
+        isBefore && styles.isDraggingUp,
+        isAfter && styles.isDraggingDown
+      )}
+    >
+      {
+        isBefore &&
+          <div
+            className={classNames(
+              styles.delayProfilePlaceholder,
+              styles.delayProfilePlaceholderBefore
+            )}
+          />
+      }
 
-        {
-          isAfter &&
-            <div
-              className={classNames(
-                styles.delayProfilePlaceholder,
-                styles.delayProfilePlaceholderAfter
-              )}
-            />
-        }
-      </div>
-    );
-  }
+      <DelayProfile
+        id={id}
+        order={order}
+        isDragging={isDragging}
+        isOver={isOver}
+        {...otherProps}
+        connectDragSource={connectDragSource}
+      />
+
+      {
+        isAfter &&
+          <div
+            className={classNames(
+              styles.delayProfilePlaceholder,
+              styles.delayProfilePlaceholderAfter
+            )}
+          />
+      }
+    </div>
+  );
 }
 
 DelayProfileDragSource.propTypes = {
   id: PropTypes.number.isRequired,
   order: PropTypes.number.isRequired,
-  isDragging: PropTypes.bool,
   isDraggingUp: PropTypes.bool,
   isDraggingDown: PropTypes.bool,
-  isOver: PropTypes.bool,
-  connectDragSource: PropTypes.func,
-  connectDropTarget: PropTypes.func,
   onDelayProfileDragMove: PropTypes.func.isRequired,
   onDelayProfileDragEnd: PropTypes.func.isRequired
 };
 
-export default DropTarget(
-  DELAY_PROFILE,
-  delayProfileDropTarget,
-  collectDropTarget
-)(DragSource(
-  DELAY_PROFILE,
-  delayProfileDragSource,
-  collectDragSource
-)(DelayProfileDragSource));
+export default DelayProfileDragSource;

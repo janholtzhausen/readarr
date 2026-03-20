@@ -28,6 +28,7 @@ namespace NzbDrone.Core.Books.Calibre
         BookFile AddAndConvert(BookFile file, CalibreSettings settings);
         void DeleteBook(BookFile book, CalibreSettings settings);
         void DeleteBooks(List<BookFile> books, CalibreSettings settings);
+        string GetOrCreateFormatPath(int calibreId, string inputFormat, string outputFormat, CalibreSettings settings);
         void RemoveFormats(int calibreId, IEnumerable<string> formats, CalibreSettings settings);
         void SetFields(BookFile file, CalibreSettings settings, bool updateCover = true, bool embed = false);
         List<string> GetAllBookFilePaths(CalibreSettings settings);
@@ -209,6 +210,40 @@ namespace NzbDrone.Core.Books.Calibre
             ExecuteSetFields(calibreId, payload, settings);
         }
 
+        public string GetOrCreateFormatPath(int calibreId, string inputFormat, string outputFormat, CalibreSettings settings)
+        {
+            var normalizedFormat = outputFormat.Trim().ToUpperInvariant();
+            var calibreBook = GetBook(calibreId, settings);
+
+            if (calibreBook.Formats != null &&
+                calibreBook.Formats.TryGetValue(normalizedFormat, out var existingFormat))
+            {
+                return existingFormat.Path;
+            }
+
+            var options = GetBookData(calibreId, settings);
+            options.Conversion_options.Input_fmt = inputFormat.Trim().ToUpperInvariant();
+            options.Conversion_options.Output_fmt = normalizedFormat;
+
+            if (settings.OutputProfile != (int)CalibreProfile.@default)
+            {
+                options.Conversion_options.Options.Output_profile = ((CalibreProfile)settings.OutputProfile).ToString();
+            }
+
+            var jobId = ConvertBook(calibreId, options.Conversion_options, settings);
+            WaitForConvertStatus(jobId, settings).GetAwaiter().GetResult();
+
+            calibreBook = GetBook(calibreId, settings);
+
+            if (calibreBook.Formats != null &&
+                calibreBook.Formats.TryGetValue(normalizedFormat, out var convertedFormat))
+            {
+                return convertedFormat.Path;
+            }
+
+            throw new CalibreException("Calibre did not produce a {0} file for book {1}", null, normalizedFormat, calibreId);
+        }
+
         public void SetFields(BookFile file, CalibreSettings settings, bool updateCover = true, bool embed = false)
         {
             var edition = file.Edition.Value;
@@ -386,8 +421,8 @@ namespace NzbDrone.Core.Books.Calibre
 
                 var jobId = _httpClient.Post<long>(request).Resource;
 
-                // Run async task to check if conversion complete
-                _ = PollConvertStatus(jobId, settings);
+                // Run async task to check if conversion completes after import.
+                _ = WaitForConvertStatus(jobId, settings);
 
                 return jobId;
             }
@@ -574,7 +609,7 @@ namespace NzbDrone.Core.Books.Calibre
             return builder;
         }
 
-        private async Task PollConvertStatus(long jobId, CalibreSettings settings)
+        private async Task WaitForConvertStatus(long jobId, CalibreSettings settings)
         {
             var request = GetBuilder($"/conversion/status/{jobId}", settings)
                 .AddQueryParam("library_id", settings.Library)
@@ -589,6 +624,7 @@ namespace NzbDrone.Core.Books.Calibre
                     if (!status.Ok)
                     {
                         _logger.Warn("Calibre conversion failed.\n{0}\n{1}", status.Traceback, status.Log);
+                        throw new CalibreException("Calibre conversion failed: {0}", null, status.Traceback ?? status.Log ?? "unknown error");
                     }
 
                     return;

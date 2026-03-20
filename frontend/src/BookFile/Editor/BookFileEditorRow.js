@@ -17,6 +17,7 @@ function BookFileEditorRow(props) {
     dateAdded,
     quality,
     qualityCutoffNotMet,
+    canDownloadConverted,
     isSelected,
     onSelectedChange,
     deleteBookFile
@@ -58,6 +59,7 @@ function BookFileEditorRow(props) {
       <BookFileActionsCell
         id={id}
         path={path}
+        canDownloadConverted={canDownloadConverted}
         deleteBookFile={deleteBookFile}
       />
     </TableRow>
@@ -70,6 +72,7 @@ BookFileEditorRow.propTypes = {
   size: PropTypes.number.isRequired,
   quality: PropTypes.object.isRequired,
   qualityCutoffNotMet: PropTypes.bool.isRequired,
+  canDownloadConverted: PropTypes.bool.isRequired,
   dateAdded: PropTypes.string.isRequired,
   isSelected: PropTypes.bool,
   onSelectedChange: PropTypes.func.isRequired,

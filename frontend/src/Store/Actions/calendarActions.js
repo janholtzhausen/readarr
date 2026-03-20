@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import moment from 'moment';
-import { createAction } from 'redux-actions';
+import { createAction } from 'Store/reduxActionsCompat';
 import { batchActions } from 'redux-batched-actions';
 import * as calendarViews from 'Calendar/calendarViews';
 import * as commandNames from 'Commands/commandNames';

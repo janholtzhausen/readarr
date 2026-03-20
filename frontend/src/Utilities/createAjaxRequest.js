@@ -1,4 +1,4 @@
-import $ from 'jquery';
+import qs from 'qs';
 
 const absUrlRegex = /^(https?:)?\/\//i;
 const apiRoot = window.Readarr.apiRoot;
@@ -16,6 +16,25 @@ function addApiKey(ajaxOptions) {
   ajaxOptions.headers['X-Api-Key'] = window.Readarr.apiKey;
 }
 
+function addQueryString(url, data, traditional) {
+  if (data == null) {
+    return url;
+  }
+
+  const query = typeof data === 'string' ?
+    data :
+    qs.stringify(data, {
+      arrayFormat: traditional ? 'repeat' : 'indices',
+      skipNulls: true
+    });
+
+  if (!query) {
+    return url;
+  }
+
+  return `${url}${url.includes('?') ? '&' : '?'}${query}`;
+}
+
 function addContentType(ajaxOptions) {
   if (
     ajaxOptions.contentType == null &&
@@ -25,15 +44,46 @@ function addContentType(ajaxOptions) {
   }
 }
 
+function createErrorResponse(response, responseText, responseJSON, aborted = false) {
+  return {
+    status: response?.status ?? 0,
+    statusText: response?.statusText ?? 'error',
+    responseText,
+    responseJSON,
+    aborted
+  };
+}
+
+function createRequestPromise(promise) {
+  const request = promise;
+
+  request.done = (callback) => {
+    promise.then((data) => callback(data));
+    return request;
+  };
+
+  request.fail = (callback) => {
+    promise.catch((error) => callback(error));
+    return request;
+  };
+
+  request.always = (callback) => {
+    promise.finally(callback);
+    return request;
+  };
+
+  return request;
+}
+
 export default function createAjaxRequest(originalAjaxOptions) {
-  const requestXHR = new window.XMLHttpRequest();
+  const abortController = new window.AbortController();
   let aborted = false;
   let complete = false;
 
   function abortRequest() {
     if (!complete) {
       aborted = true;
-      requestXHR.abort();
+      abortController.abort();
     }
   }
 
@@ -45,16 +95,85 @@ export default function createAjaxRequest(originalAjaxOptions) {
     addContentType(ajaxOptions);
   }
 
-  const request = $.ajax({
-    xhr: () => requestXHR,
-    ...ajaxOptions
-  }).then(null, (xhr, textStatus, errorThrown) => {
-    xhr.aborted = aborted;
+  const {
+    method = 'GET',
+    data,
+    dataType,
+    traditional,
+    headers = {},
+    contentType,
+    url,
+  } = ajaxOptions;
 
-    return $.Deferred().reject(xhr, textStatus, errorThrown).promise();
-  }).always(() => {
-    complete = true;
-  });
+  const requestUrl = method === 'GET' || method === 'HEAD' ?
+    addQueryString(url, data, traditional) :
+    url;
+
+  const fetchOptions = {
+    method,
+    headers: {
+      ...headers
+    },
+    signal: abortController.signal
+  };
+
+  if (contentType) {
+    fetchOptions.headers['Content-Type'] = contentType;
+  }
+
+  if (method !== 'GET' && method !== 'HEAD' && data != null) {
+    fetchOptions.body =
+      contentType === 'application/json' && typeof data !== 'string' ?
+        JSON.stringify(data) :
+        data;
+  }
+
+  const request = createRequestPromise(
+    fetch(requestUrl, fetchOptions)
+      .then(async (response) => {
+        const responseText = await response.text();
+        let responseJSON = null;
+
+        if (responseText) {
+          try {
+            responseJSON = JSON.parse(responseText);
+          } catch {
+            responseJSON = null;
+          }
+        }
+
+        if (!response.ok) {
+          throw createErrorResponse(response, responseText, responseJSON);
+        }
+
+        if (dataType === 'json') {
+          return responseJSON ?? {};
+        }
+
+        if (responseJSON != null) {
+          return responseJSON;
+        }
+
+        return responseText;
+      })
+      .catch((error) => {
+        if (error?.name === 'AbortError') {
+          throw createErrorResponse(null, '', null, true);
+        }
+
+        if (error && typeof error.status === 'number') {
+          throw {
+            ...error,
+            aborted
+          };
+        }
+
+        throw createErrorResponse(null, error?.message ?? '', null, aborted);
+      })
+      .finally(() => {
+        complete = true;
+      })
+  );
 
   return {
     request,

@@ -1,4 +1,4 @@
-import { push } from 'connected-react-router';
+import { withRouter } from 'Components/Router/RouterContext';
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
 import createAllAuthorSelector from 'Store/Selectors/createAllAuthorsSelector';
@@ -86,17 +86,17 @@ function createMapStateToProps() {
 function createMapDispatchToProps(dispatch, props) {
   return {
     onGoToAuthor(titleSlug) {
-      dispatch(push(`${window.Readarr.urlBase}/author/${titleSlug}`));
+      props.history.push(`${window.Readarr.urlBase}/author/${titleSlug}`);
     },
 
     onGoToBook(titleSlug) {
-      dispatch(push(`${window.Readarr.urlBase}/book/${titleSlug}`));
+      props.history.push(`${window.Readarr.urlBase}/book/${titleSlug}`);
     },
 
     onGoToAddNewAuthor(query) {
-      dispatch(push(`${window.Readarr.urlBase}/add/search?term=${encodeURIComponent(query)}`));
+      props.history.push(`${window.Readarr.urlBase}/add/search?term=${encodeURIComponent(query)}`);
     }
   };
 }
 
-export default connect(createMapStateToProps, createMapDispatchToProps)(AuthorSearchInput);
+export default withRouter(connect(createMapStateToProps, createMapDispatchToProps)(AuthorSearchInput));

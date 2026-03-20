@@ -8,10 +8,10 @@ import styles from './SpinnerButton.css';
 
 function SpinnerButton(props) {
   const {
-    className,
+    className = styles.button,
     isSpinning,
     isDisabled,
-    spinnerIcon,
+    spinnerIcon = icons.SPINNER,
     children,
     ...otherProps
   } = props;
@@ -43,16 +43,11 @@ function SpinnerButton(props) {
 
 SpinnerButton.propTypes = {
   ...Button.Props,
-  className: PropTypes.string.isRequired,
+  className: PropTypes.string,
   isSpinning: PropTypes.bool.isRequired,
   isDisabled: PropTypes.bool,
-  spinnerIcon: PropTypes.object.isRequired,
+  spinnerIcon: PropTypes.object,
   children: PropTypes.node
-};
-
-SpinnerButton.defaultProps = {
-  className: styles.button,
-  spinnerIcon: icons.SPINNER
 };
 
 export default SpinnerButton;

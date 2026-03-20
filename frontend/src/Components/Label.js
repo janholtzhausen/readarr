@@ -6,10 +6,10 @@ import styles from './Label.css';
 
 function Label(props) {
   const {
-    className,
-    kind,
-    size,
-    outline,
+    className = styles.label,
+    kind = kinds.DEFAULT,
+    size = sizes.SMALL,
+    outline = false,
     children,
     ...otherProps
   } = props;
@@ -30,19 +30,12 @@ function Label(props) {
 }
 
 Label.propTypes = {
-  className: PropTypes.string.isRequired,
+  className: PropTypes.string,
   title: PropTypes.string,
-  kind: PropTypes.oneOf(kinds.all).isRequired,
-  size: PropTypes.oneOf(sizes.all).isRequired,
-  outline: PropTypes.bool.isRequired,
+  kind: PropTypes.oneOf(kinds.all),
+  size: PropTypes.oneOf(sizes.all),
+  outline: PropTypes.bool,
   children: PropTypes.node.isRequired
-};
-
-Label.defaultProps = {
-  className: styles.label,
-  kind: kinds.DEFAULT,
-  size: sizes.SMALL,
-  outline: false
 };
 
 export default Label;

@@ -15,11 +15,7 @@ function AuthorBanner(props) {
 }
 
 AuthorBanner.propTypes = {
-  size: PropTypes.number.isRequired
-};
-
-AuthorBanner.defaultProps = {
-  size: 70
+  size: PropTypes.number
 };
 
 export default AuthorBanner;

@@ -35,8 +35,9 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <!--
         CS1591: Missing XML comment for publicly visible type or member 'Type_or_Member'
+        CA1416: Platform compatibility - Windows-only APIs are guarded by platform runtime checks via Readarr.Windows/Readarr.Mono assembly loading
     -->
-    <NoWarn>$(NoWarn);CS1591;</NoWarn>
+    <NoWarn>$(NoWarn);CS1591;CA1416;</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -99,11 +100,6 @@
     <RootNamespace Condition="'$(ReadarrProject)'=='true'">$(MSBuildProjectName.Replace('Readarr','NzbDrone'))</RootNamespace>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(TestProject)'!='true'">
-    <!-- Annotates .NET assemblies with repository information including SHA -->
-    <!-- This is built-in on .NET 8 and can be removed once the project is updated -->
-    <PackageReference Include="Microsoft.SourceLink.GitHub" />
-  </ItemGroup>
 
   <!-- Standard testing packages -->
   <ItemGroup Condition="'$(TestProject)'=='true'">

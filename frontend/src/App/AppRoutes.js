@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import { Redirect, Route } from 'react-router-dom';
+import { Navigate, Route } from 'react-router-dom';
 import BlocklistConnector from 'Activity/Blocklist/BlocklistConnector';
 import HistoryConnector from 'Activity/History/HistoryConnector';
 import QueueConnector from 'Activity/Queue/QueueConnector';
@@ -39,235 +39,113 @@ import CutoffUnmetConnector from 'Wanted/CutoffUnmet/CutoffUnmetConnector';
 import MissingConnector from 'Wanted/Missing/MissingConnector';
 
 function AppRoutes(props) {
-  const {
-    app
-  } = props;
-
   return (
     <Switch>
       {/*
         Author
       */}
 
-      <Route
-        exact={true}
-        path="/"
-        component={AuthorIndexConnector}
-      />
+      <Route path="/" element={<AuthorIndexConnector />} />
 
       {
         window.Readarr.urlBase &&
           <Route
-            exact={true}
             path="/"
-            addUrlBase={false}
-            render={() => {
-              return (
-                <Redirect
-                  to={getPathWithUrlBase('/')}
-                  component={app}
-                />
-              );
-            }}
+            element={<Navigate replace={true} to={getPathWithUrlBase('/')} />}
           />
       }
 
-      <Route
-        path="/authors"
-        component={AuthorIndexConnector}
-      />
+      <Route path="/authors" element={<AuthorIndexConnector />} />
 
-      <Route
-        path="/add/search"
-        component={AddNewItemConnector}
-      />
+      <Route path="/add/search" element={<AddNewItemConnector />} />
 
-      <Route
-        exact={true}
-        path="/shelf"
-        component={BookshelfConnector}
-      />
+      <Route path="/shelf" element={<BookshelfConnector />} />
 
-      <Route
-        exact={true}
-        path="/books"
-        component={BookIndexConnector}
-      />
+      <Route path="/books" element={<BookIndexConnector />} />
 
-      <Route
-        path="/unmapped"
-        component={UnmappedFilesTableConnector}
-      />
+      <Route path="/unmapped" element={<UnmappedFilesTableConnector />} />
 
-      <Route
-        path="/author/:titleSlug"
-        component={AuthorDetailsPageConnector}
-      />
+      <Route path="/author/:titleSlug" element={<AuthorDetailsPageConnector />} />
 
-      <Route
-        path="/book/:titleSlug"
-        component={BookDetailsPageConnector}
-      />
+      <Route path="/book/:titleSlug" element={<BookDetailsPageConnector />} />
 
       {/*
         Calendar
       */}
 
-      <Route
-        path="/calendar"
-        component={CalendarPageConnector}
-      />
+      <Route path="/calendar" element={<CalendarPageConnector />} />
 
       {/*
         Activity
       */}
 
-      <Route
-        path="/activity/history"
-        component={HistoryConnector}
-      />
+      <Route path="/activity/history" element={<HistoryConnector />} />
 
-      <Route
-        path="/activity/queue"
-        component={QueueConnector}
-      />
+      <Route path="/activity/queue" element={<QueueConnector />} />
 
-      <Route
-        path="/activity/blocklist"
-        component={BlocklistConnector}
-      />
+      <Route path="/activity/blocklist" element={<BlocklistConnector />} />
 
       {/*
         Wanted
       */}
 
-      <Route
-        path="/wanted/missing"
-        component={MissingConnector}
-      />
+      <Route path="/wanted/missing" element={<MissingConnector />} />
 
-      <Route
-        path="/wanted/cutoffunmet"
-        component={CutoffUnmetConnector}
-      />
+      <Route path="/wanted/cutoffunmet" element={<CutoffUnmetConnector />} />
 
       {/*
         Settings
       */}
 
-      <Route
-        exact={true}
-        path="/settings"
-        component={Settings}
-      />
+      <Route path="/settings" element={<Settings />} />
 
-      <Route
-        path="/settings/mediamanagement"
-        component={MediaManagementConnector}
-      />
+      <Route path="/settings/mediamanagement" element={<MediaManagementConnector />} />
 
-      <Route
-        path="/settings/profiles"
-        component={Profiles}
-      />
+      <Route path="/settings/profiles" element={<Profiles />} />
 
-      <Route
-        path="/settings/quality"
-        component={QualityConnector}
-      />
+      <Route path="/settings/quality" element={<QualityConnector />} />
 
-      <Route
-        path="/settings/customformats"
-        component={CustomFormatSettingsConnector}
-      />
+      <Route path="/settings/customformats" element={<CustomFormatSettingsConnector />} />
 
-      <Route
-        path="/settings/indexers"
-        component={IndexerSettingsConnector}
-      />
+      <Route path="/settings/indexers" element={<IndexerSettingsConnector />} />
 
-      <Route
-        path="/settings/downloadclients"
-        component={DownloadClientSettingsConnector}
-      />
+      <Route path="/settings/downloadclients" element={<DownloadClientSettingsConnector />} />
 
-      <Route
-        path="/settings/importlists"
-        component={ImportListSettingsConnector}
-      />
+      <Route path="/settings/importlists" element={<ImportListSettingsConnector />} />
 
-      <Route
-        path="/settings/connect"
-        component={NotificationSettings}
-      />
+      <Route path="/settings/connect" element={<NotificationSettings />} />
 
-      <Route
-        path="/settings/metadata"
-        component={MetadataSettings}
-      />
+      <Route path="/settings/metadata" element={<MetadataSettings />} />
 
-      <Route
-        path="/settings/tags"
-        component={TagSettings}
-      />
+      <Route path="/settings/tags" element={<TagSettings />} />
 
-      <Route
-        path="/settings/general"
-        component={GeneralSettingsConnector}
-      />
+      <Route path="/settings/general" element={<GeneralSettingsConnector />} />
 
-      <Route
-        path="/settings/ui"
-        component={UISettingsConnector}
-      />
+      <Route path="/settings/ui" element={<UISettingsConnector />} />
 
-      <Route
-        path="/settings/development"
-        component={DevelopmentSettingsConnector}
-      />
+      <Route path="/settings/development" element={<DevelopmentSettingsConnector />} />
 
       {/*
         System
       */}
 
-      <Route
-        path="/system/status"
-        component={Status}
-      />
+      <Route path="/system/status" element={<Status />} />
 
-      <Route
-        path="/system/tasks"
-        component={Tasks}
-      />
+      <Route path="/system/tasks" element={<Tasks />} />
 
-      <Route
-        path="/system/backup"
-        component={BackupsConnector}
-      />
+      <Route path="/system/backup" element={<BackupsConnector />} />
 
-      <Route
-        path="/system/updates"
-        component={Updates}
-      />
+      <Route path="/system/updates" element={<Updates />} />
 
-      <Route
-        path="/system/events"
-        component={LogsTableConnector}
-      />
+      <Route path="/system/events" element={<LogsTableConnector />} />
 
-      <Route
-        path="/system/logs/files"
-        component={Logs}
-      />
+      <Route path="/system/logs/files/*" element={<Logs />} />
 
       {/*
         Not Found
       */}
 
-      <Route
-        path="*"
-        component={NotFound}
-      />
+      <Route path="*" element={<NotFound />} />
 
     </Switch>
   );

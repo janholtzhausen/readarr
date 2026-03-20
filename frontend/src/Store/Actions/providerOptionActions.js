@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { createAction } from 'redux-actions';
+import { createAction } from 'Store/reduxActionsCompat';
 import { createThunk, handleThunks } from 'Store/thunks';
 import requestAction from 'Utilities/requestAction';
 import updateSectionState from 'Utilities/State/updateSectionState';

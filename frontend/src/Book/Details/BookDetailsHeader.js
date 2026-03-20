@@ -1,9 +1,9 @@
 import moment from 'moment';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import TextTruncate from 'react-text-truncate';
 import AuthorNameLink from 'Author/AuthorNameLink';
 import BookCover from 'Book/BookCover';
+import ClampText from 'Components/Text/ClampText';
 import HeartRating from 'Components/HeartRating';
 import Icon from 'Components/Icon';
 import Label from 'Components/Label';
@@ -233,7 +233,7 @@ class BookDetailsHeader extends Component {
               onMeasure={this.onOverviewMeasure}
               className={styles.overview}
             >
-              <TextTruncate
+              <ClampText
                 line={Math.floor(overviewHeight / (defaultFontSize * lineHeight))}
                 text={stripHtml(overview)}
               />

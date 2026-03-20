@@ -1,5 +1,5 @@
 import $ from 'jquery';
-import { createAction } from 'redux-actions';
+import { createAction } from 'Store/reduxActionsCompat';
 import { batchActions } from 'redux-batched-actions';
 import { set } from 'Store/Actions/baseActions';
 import { createThunk, handleThunks } from 'Store/thunks';

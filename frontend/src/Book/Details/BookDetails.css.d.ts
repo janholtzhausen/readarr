@@ -5,6 +5,7 @@ interface CssExports {
   'bookNavigationButtons': string;
   'bookUpButton': string;
   'contentContainer': string;
+  'downloadToolbarButton': string;
   'filterIcon': string;
   'innerContentBody': string;
   'selectedTab': string;

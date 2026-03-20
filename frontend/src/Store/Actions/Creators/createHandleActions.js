@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { handleActions } from 'redux-actions';
+import { handleActions } from 'Store/reduxActionsCompat';
 import {
   CLEAR_PENDING_CHANGES,
   REMOVE_ITEM,

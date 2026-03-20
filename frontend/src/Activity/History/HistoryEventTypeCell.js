@@ -66,7 +66,7 @@ function getTooltip(eventType, data) {
   }
 }
 
-function HistoryEventTypeCell({ eventType, data }) {
+function HistoryEventTypeCell({ eventType, data = {} }) {
   const iconName = getIconName(eventType);
   const iconKind = getIconKind(eventType);
   const tooltip = getTooltip(eventType, data);
@@ -87,10 +87,6 @@ function HistoryEventTypeCell({ eventType, data }) {
 HistoryEventTypeCell.propTypes = {
   eventType: PropTypes.string.isRequired,
   data: PropTypes.object
-};
-
-HistoryEventTypeCell.defaultProps = {
-  data: {}
 };
 
 export default HistoryEventTypeCell;

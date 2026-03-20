@@ -6,17 +6,15 @@ import Link from 'Components/Link/Link';
 import { icons } from 'Helpers/Props';
 import styles from './FormInputHelpText.css';
 
-function FormInputHelpText(props) {
-  const {
-    className,
-    text,
-    link,
-    tooltip,
-    isError,
-    isWarning,
-    isCheckInput
-  } = props;
-
+function FormInputHelpText({
+  className = styles.helpText,
+  text,
+  link,
+  tooltip,
+  isError = false,
+  isWarning = false,
+  isCheckInput = false
+}) {
   return (
     <div className={classNames(
       className,
@@ -55,20 +53,13 @@ function FormInputHelpText(props) {
 }
 
 FormInputHelpText.propTypes = {
-  className: PropTypes.string.isRequired,
+  className: PropTypes.string,
   text: PropTypes.string.isRequired,
   link: PropTypes.string,
   tooltip: PropTypes.string,
   isError: PropTypes.bool,
   isWarning: PropTypes.bool,
   isCheckInput: PropTypes.bool
-};
-
-FormInputHelpText.defaultProps = {
-  className: styles.helpText,
-  isError: false,
-  isWarning: false,
-  isCheckInput: false
 };
 
 export default FormInputHelpText;

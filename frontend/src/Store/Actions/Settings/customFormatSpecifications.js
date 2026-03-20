@@ -1,4 +1,4 @@
-import { createAction } from 'redux-actions';
+import { createAction } from 'Store/reduxActionsCompat';
 import { batchActions } from 'redux-batched-actions';
 import createFetchSchemaHandler from 'Store/Actions/Creators/createFetchSchemaHandler';
 import createClearReducer from 'Store/Actions/Creators/Reducers/createClearReducer';

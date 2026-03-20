@@ -1,16 +1,13 @@
-import { connect } from 'react-redux';
-import { createSelector } from 'reselect';
+import React from 'react';
+import useAppSelector from 'Store/Hooks/useAppSelector';
 import Messages from './Messages';
 
-function createMapStateToProps() {
-  return createSelector(
-    (state) => state.app.messages.items,
-    (messages) => {
-      return {
-        messages: messages.slice().reverse()
-      };
-    }
+function MessagesConnector() {
+  const messages = useAppSelector((state) => state.app.messages.items);
+
+  return (
+    <Messages messages={messages.slice().reverse()} />
   );
 }
 
-export default connect(createMapStateToProps)(Messages);
+export default MessagesConnector;

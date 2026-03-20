@@ -12,16 +12,9 @@ class Logs extends Component {
   render() {
     return (
       <Switch>
-        <Route
-          exact={true}
-          path="/system/logs/files"
-          component={LogFilesConnector}
-        />
+        <Route path="/" element={<LogFilesConnector />} />
 
-        <Route
-          path="/system/logs/files/update"
-          component={UpdateLogFilesConnector}
-        />
+        <Route path="update" element={<UpdateLogFilesConnector />} />
       </Switch>
     );
   }

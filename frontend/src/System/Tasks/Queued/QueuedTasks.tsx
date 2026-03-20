@@ -1,11 +1,12 @@
 import React, { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import AppState from 'App/State/AppState';
 import FieldSet from 'Components/FieldSet';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import Table from 'Components/Table/Table';
 import TableBody from 'Components/Table/TableBody';
 import { fetchCommands } from 'Store/Actions/commandActions';
+import useAppDispatch from 'Store/Hooks/useAppDispatch';
 import translate from 'Utilities/String/translate';
 import QueuedTaskRow from './QueuedTaskRow';
 
@@ -47,7 +48,7 @@ const columns = [
 ];
 
 export default function QueuedTasks() {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const { isFetching, isPopulated, items } = useSelector(
     (state: AppState) => state.commands
   );

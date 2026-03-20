@@ -2,7 +2,6 @@ import classNames from 'classnames';
 import _ from 'lodash';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import ReactDOM from 'react-dom';
 import QueueStatusConnector from 'Activity/Queue/Status/QueueStatusConnector';
 import OverlayScroller from 'Components/Scroller/OverlayScroller';
 import Scroller from 'Components/Scroller/Scroller';
@@ -315,7 +314,7 @@ class PageSidebar extends Component {
   // Listeners
 
   onWindowClick = (event) => {
-    const sidebar = ReactDOM.findDOMNode(this._sidebarRef);
+    const sidebar = this._sidebarRef;
     const toggleButton = document.getElementById('sidebar-toggle-button');
 
     if (!sidebar) {

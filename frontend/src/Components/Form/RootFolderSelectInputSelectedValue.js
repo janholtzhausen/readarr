@@ -6,11 +6,11 @@ import styles from './RootFolderSelectInputSelectedValue.css';
 
 function RootFolderSelectInputSelectedValue(props) {
   const {
-    name,
+    name = '',
     value,
     freeSpace,
     authorFolder,
-    includeFreeSpace,
+    includeFreeSpace = true,
     isWindows,
     ...otherProps
   } = props;
@@ -55,12 +55,7 @@ RootFolderSelectInputSelectedValue.propTypes = {
   freeSpace: PropTypes.number,
   authorFolder: PropTypes.string,
   isWindows: PropTypes.bool,
-  includeFreeSpace: PropTypes.bool.isRequired
-};
-
-RootFolderSelectInputSelectedValue.defaultProps = {
-  name: '',
-  includeFreeSpace: true
+  includeFreeSpace: PropTypes.bool
 };
 
 export default RootFolderSelectInputSelectedValue;

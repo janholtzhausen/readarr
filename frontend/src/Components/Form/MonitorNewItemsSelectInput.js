@@ -4,13 +4,11 @@ import monitorNewItemsOptions from 'Utilities/Author/monitorNewItemsOptions';
 import translate from 'Utilities/String/translate';
 import SelectInput from './SelectInput';
 
-function MonitorNewItemsSelectInput(props) {
-  const {
-    includeNoChange,
-    includeMixed,
-    ...otherProps
-  } = props;
-
+function MonitorNewItemsSelectInput({
+  includeNoChange = false,
+  includeMixed = false,
+  ...otherProps
+}) {
   const values = [...monitorNewItemsOptions];
 
   if (includeNoChange) {
@@ -38,14 +36,9 @@ function MonitorNewItemsSelectInput(props) {
 }
 
 MonitorNewItemsSelectInput.propTypes = {
-  includeNoChange: PropTypes.bool.isRequired,
-  includeMixed: PropTypes.bool.isRequired,
+  includeNoChange: PropTypes.bool,
+  includeMixed: PropTypes.bool,
   onChange: PropTypes.func.isRequired
-};
-
-MonitorNewItemsSelectInput.defaultProps = {
-  includeNoChange: false,
-  includeMixed: false
 };
 
 export default MonitorNewItemsSelectInput;

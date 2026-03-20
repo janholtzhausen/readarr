@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
+import { withRouter } from 'Components/Router/RouterContext';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
 import { createSelector } from 'reselect';
 import { fetchTranslations, saveDimensions, setIsSidebarVisible } from 'Store/Actions/appActions';
 import { fetchAuthor } from 'Store/Actions/authorActions';

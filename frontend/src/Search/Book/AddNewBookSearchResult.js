@@ -1,8 +1,8 @@
 import moment from 'moment';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import TextTruncate from 'react-text-truncate';
 import BookCover from 'Book/BookCover';
+import ClampText from 'Components/Text/ClampText';
 import HeartRating from 'Components/HeartRating';
 import Icon from 'Components/Icon';
 import Label from 'Components/Label';
@@ -185,8 +185,7 @@ class AddNewBookSearchResult extends Component {
                 maxHeight: `${height}px`
               }}
             >
-              <TextTruncate
-                truncateText="…"
+              <ClampText
                 line={Math.floor(height / (defaultFontSize * lineHeight))}
                 text={stripHtml(overview)}
               />

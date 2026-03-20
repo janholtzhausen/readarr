@@ -1,7 +1,7 @@
-import { push } from 'connected-react-router';
 import _ from 'lodash';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
+import { withRouter } from 'Components/Router/RouterContext';
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
@@ -45,10 +45,6 @@ function createMapStateToProps() {
   );
 }
 
-const mapDispatchToProps = {
-  push
-};
-
 class AuthorDetailsPageConnector extends Component {
 
   //
@@ -56,7 +52,7 @@ class AuthorDetailsPageConnector extends Component {
 
   componentDidUpdate(prevProps) {
     if (!this.props.titleSlug) {
-      this.props.push(`${window.Readarr.urlBase}/`);
+      this.props.history.push(`${window.Readarr.urlBase}/`);
       return;
     }
   }
@@ -112,7 +108,7 @@ AuthorDetailsPageConnector.propTypes = {
   isPopulated: PropTypes.bool.isRequired,
   error: PropTypes.object,
   match: PropTypes.shape({ params: PropTypes.shape({ titleSlug: PropTypes.string.isRequired }).isRequired }).isRequired,
-  push: PropTypes.func.isRequired
+  history: PropTypes.shape({ push: PropTypes.func.isRequired }).isRequired
 };
 
-export default connect(createMapStateToProps, mapDispatchToProps)(AuthorDetailsPageConnector);
+export default withRouter(connect(createMapStateToProps)(AuthorDetailsPageConnector));

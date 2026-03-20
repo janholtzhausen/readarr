@@ -59,17 +59,15 @@ function revisionLabel(className, quality, showRevision) {
   }
 }
 
-function BookQuality(props) {
-  const {
-    className,
-    title,
-    quality,
-    size,
-    isMonitored,
-    isCutoffNotMet,
-    showRevision
-  } = props;
-
+function BookQuality({
+  className,
+  title = '',
+  quality,
+  size,
+  isMonitored = true,
+  isCutoffNotMet,
+  showRevision = false
+}) {
   let kind = kinds.DEFAULT;
   if (!isMonitored) {
     kind = kinds.DISABLED;
@@ -102,12 +100,6 @@ BookQuality.propTypes = {
   isMonitored: PropTypes.bool,
   isCutoffNotMet: PropTypes.bool,
   showRevision: PropTypes.bool
-};
-
-BookQuality.defaultProps = {
-  title: '',
-  isMonitored: true,
-  showRevision: false
 };
 
 export default BookQuality;

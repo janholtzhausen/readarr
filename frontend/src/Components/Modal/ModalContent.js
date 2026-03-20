@@ -5,15 +5,13 @@ import Link from 'Components/Link/Link';
 import { icons } from 'Helpers/Props';
 import styles from './ModalContent.css';
 
-function ModalContent(props) {
-  const {
-    className,
-    children,
-    showCloseButton,
-    onModalClose,
-    ...otherProps
-  } = props;
-
+function ModalContent({
+  className = styles.modalContent,
+  children,
+  showCloseButton = true,
+  onModalClose,
+  ...otherProps
+}) {
   return (
     <div
       className={className}
@@ -40,13 +38,8 @@ function ModalContent(props) {
 ModalContent.propTypes = {
   className: PropTypes.string,
   children: PropTypes.node,
-  showCloseButton: PropTypes.bool.isRequired,
+  showCloseButton: PropTypes.bool,
   onModalClose: PropTypes.func.isRequired
-};
-
-ModalContent.defaultProps = {
-  className: styles.modalContent,
-  showCloseButton: true
 };
 
 export default ModalContent;

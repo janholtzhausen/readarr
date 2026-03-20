@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { createAction } from 'redux-actions';
+import { createAction } from 'Store/reduxActionsCompat';
 import { batchActions } from 'redux-batched-actions';
 import bookEntities from 'Book/bookEntities';
 import { sortDirections } from 'Helpers/Props';

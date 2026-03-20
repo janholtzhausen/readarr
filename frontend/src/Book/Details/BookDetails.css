@@ -58,6 +58,10 @@
   }
 }
 
+.downloadToolbarButton {
+  width: 72px;
+}
+
 @media only screen and (max-width: $breakpointSmall) {
   .contentContainer {
     padding: 20px 0;

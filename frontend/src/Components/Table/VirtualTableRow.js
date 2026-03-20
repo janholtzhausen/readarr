@@ -4,7 +4,7 @@ import styles from './VirtualTableRow.css';
 
 function VirtualTableRow(props) {
   const {
-    className,
+    className = styles.row,
     children,
     style,
     ...otherProps
@@ -22,13 +22,9 @@ function VirtualTableRow(props) {
 }
 
 VirtualTableRow.propTypes = {
-  className: PropTypes.string.isRequired,
+  className: PropTypes.string,
   style: PropTypes.object.isRequired,
   children: PropTypes.node
-};
-
-VirtualTableRow.defaultProps = {
-  className: styles.row
 };
 
 export default VirtualTableRow;

@@ -15,11 +15,7 @@ function BookCover(props) {
 }
 
 BookCover.propTypes = {
-  size: PropTypes.number.isRequired
-};
-
-BookCover.defaultProps = {
-  size: 250
+  size: PropTypes.number
 };
 
 export default BookCover;

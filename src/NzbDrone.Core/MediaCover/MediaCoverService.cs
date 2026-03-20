@@ -20,6 +20,7 @@ namespace NzbDrone.Core.MediaCover
     {
         void ConvertToLocalUrls(int entityId, MediaCoverEntity coverEntity, IEnumerable<MediaCover> covers);
         string GetCoverPath(int entityId, MediaCoverEntity coverEntity, MediaCoverTypes coverType, string extension, int? height = null);
+        void EnsureAuthorCovers(Author author);
         void EnsureBookCovers(Book book);
     }
 
@@ -135,7 +136,7 @@ namespace NzbDrone.Core.MediaCover
             return Path.Combine(_coverRootFolder, "Books", bookId.ToString());
         }
 
-        private void EnsureAuthorCovers(Author author)
+        public void EnsureAuthorCovers(Author author)
         {
             var toResize = new List<Tuple<MediaCover, bool>>();
 
@@ -197,47 +198,62 @@ namespace NzbDrone.Core.MediaCover
             }
         }
 
+        private MediaCover GetPrimaryBookCover(Book book)
+        {
+            var editions = book.Editions?.Value ?? new List<Edition>();
+
+            return editions
+                .OrderByDescending(x => x.Monitored)
+                .SelectMany(x => x.Images ?? new List<MediaCover>())
+                .FirstOrDefault(x => x.CoverType == MediaCoverTypes.Cover);
+        }
+
         public void EnsureBookCovers(Book book)
         {
-            foreach (var cover in book.Editions.Value.Single(x => x.Monitored).Images.Where(e => e.CoverType == MediaCoverTypes.Cover))
+            var cover = GetPrimaryBookCover(book);
+
+            if (cover == null)
             {
-                if (cover.CoverType == MediaCoverTypes.Unknown)
-                {
-                    continue;
-                }
+                _logger.Debug("Skipping cover download for {0}: no cover images are available on any edition", book);
+                return;
+            }
 
-                if (cover.Url.IsNullOrWhiteSpace() || !cover.Url.IsValidUrl())
-                {
-                    _logger.Debug("Skipping {0} cover for {1}: no valid URL", cover.CoverType, book);
-                    continue;
-                }
+            if (cover.CoverType == MediaCoverTypes.Unknown)
+            {
+                return;
+            }
 
-                var fileName = GetCoverPath(book.Id, MediaCoverEntity.Book, cover.CoverType, cover.Extension, null);
-                var alreadyExists = false;
+            if (cover.Url.IsNullOrWhiteSpace() || !cover.Url.IsValidUrl())
+            {
+                _logger.Debug("Skipping {0} cover for {1}: no valid URL", cover.CoverType, book);
+                return;
+            }
 
-                try
-                {
-                    var serverFileHeaders = GetServerHeaders(cover.Url);
+            var fileName = GetCoverPath(book.Id, MediaCoverEntity.Book, cover.CoverType, cover.Extension, null);
+            var alreadyExists = false;
 
-                    alreadyExists = _coverExistsSpecification.AlreadyExists(serverFileHeaders.LastModified, GetContentLength(serverFileHeaders), fileName);
+            try
+            {
+                var serverFileHeaders = GetServerHeaders(cover.Url);
 
-                    if (!alreadyExists)
-                    {
-                        DownloadBookCover(book, cover, serverFileHeaders.LastModified ?? DateTime.Now);
-                    }
-                }
-                catch (HttpException e)
+                alreadyExists = _coverExistsSpecification.AlreadyExists(serverFileHeaders.LastModified, GetContentLength(serverFileHeaders), fileName);
+
+                if (!alreadyExists)
                 {
-                    _logger.Warn("Couldn't download media cover for {0}. {1}", book, e.Message);
+                    DownloadBookCover(book, cover, serverFileHeaders.LastModified ?? DateTime.Now);
                 }
-                catch (WebException e)
-                {
-                    _logger.Warn("Couldn't download media cover for {0}. {1}", book, e.Message);
-                }
-                catch (Exception e)
-                {
-                    _logger.Error(e, "Couldn't download media cover for {0}", book);
-                }
+            }
+            catch (HttpException e)
+            {
+                _logger.Warn("Couldn't download media cover for {0}. {1}", book, e.Message);
+            }
+            catch (WebException e)
+            {
+                _logger.Warn("Couldn't download media cover for {0}. {1}", book, e.Message);
+            }
+            catch (Exception e)
+            {
+                _logger.Error(e, "Couldn't download media cover for {0}", book);
             }
         }
 

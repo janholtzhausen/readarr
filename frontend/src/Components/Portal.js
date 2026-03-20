@@ -2,17 +2,16 @@ import PropTypes from 'prop-types';
 import ReactDOM from 'react-dom';
 
 function Portal(props) {
-  const { children, target } = props;
+  const {
+    children,
+    target = document.getElementById('portal-root')
+  } = props;
   return ReactDOM.createPortal(children, target);
 }
 
 Portal.propTypes = {
   children: PropTypes.node.isRequired,
-  target: PropTypes.object.isRequired
-};
-
-Portal.defaultProps = {
-  target: document.getElementById('portal-root')
+  target: PropTypes.object
 };
 
 export default Portal;

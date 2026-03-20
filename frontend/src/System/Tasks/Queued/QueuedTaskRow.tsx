@@ -1,6 +1,6 @@
 import moment from 'moment';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { CommandBody } from 'Commands/Command';
 import Icon from 'Components/Icon';
 import IconButton from 'Components/Link/IconButton';
@@ -10,6 +10,7 @@ import TableRow from 'Components/Table/TableRow';
 import useModalOpenState from 'Helpers/Hooks/useModalOpenState';
 import { icons, kinds } from 'Helpers/Props';
 import { cancelCommand } from 'Store/Actions/commandActions';
+import useAppDispatch from 'Store/Hooks/useAppDispatch';
 import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
 import formatDate from 'Utilities/Date/formatDate';
 import formatDateTime from 'Utilities/Date/formatDateTime';
@@ -115,7 +116,7 @@ export default function QueuedTaskRow(props: QueuedTaskRowProps) {
     clientUserAgent,
   } = props;
 
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const { longDateFormat, shortDateFormat, showRelativeDates, timeFormat } =
     useSelector(createUISettingsSelector());
 

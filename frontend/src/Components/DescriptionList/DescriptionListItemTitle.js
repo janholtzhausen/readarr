@@ -2,12 +2,10 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import styles from './DescriptionListItemTitle.css';
 
-function DescriptionListItemTitle(props) {
-  const {
-    className,
-    children
-  } = props;
-
+function DescriptionListItemTitle({
+  className = styles.title,
+  children
+}) {
   return (
     <dt className={className}>
       {children}
@@ -16,12 +14,8 @@ function DescriptionListItemTitle(props) {
 }
 
 DescriptionListItemTitle.propTypes = {
-  className: PropTypes.string.isRequired,
+  className: PropTypes.string,
   children: PropTypes.string
-};
-
-DescriptionListItemTitle.defaultProps = {
-  className: styles.title
 };
 
 export default DescriptionListItemTitle;

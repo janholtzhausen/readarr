@@ -1,6 +1,6 @@
-import { push } from 'connected-react-router';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
+import { withRouter } from 'Components/Router/RouterContext';
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
 import { deleteBook } from 'Store/Actions/bookActions';
@@ -17,7 +17,6 @@ function createMapStateToProps() {
 }
 
 const mapDispatchToProps = {
-  push,
   deleteBook
 };
 
@@ -35,7 +34,7 @@ class DeleteBookModalContentConnector extends Component {
 
     this.props.onModalClose(true);
 
-    this.props.push(`${window.Readarr.urlBase}/author/${this.props.authorSlug}`);
+    this.props.history.push(`${window.Readarr.urlBase}/author/${this.props.authorSlug}`);
   };
 
   //
@@ -54,9 +53,9 @@ class DeleteBookModalContentConnector extends Component {
 DeleteBookModalContentConnector.propTypes = {
   bookId: PropTypes.number.isRequired,
   authorSlug: PropTypes.string.isRequired,
-  push: PropTypes.func.isRequired,
+  history: PropTypes.shape({ push: PropTypes.func.isRequired }).isRequired,
   onModalClose: PropTypes.func.isRequired,
   deleteBook: PropTypes.func.isRequired
 };
 
-export default connect(createMapStateToProps, mapDispatchToProps)(DeleteBookModalContentConnector);
+export default withRouter(connect(createMapStateToProps, mapDispatchToProps)(DeleteBookModalContentConnector));

@@ -34,8 +34,4 @@ BookIndexFilterMenu.propTypes = {
   onFilterSelect: PropTypes.func.isRequired
 };
 
-BookIndexFilterMenu.defaultProps = {
-  showCustomFilters: false
-};
-
 export default BookIndexFilterMenu;

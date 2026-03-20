@@ -6,9 +6,9 @@ import IconButton from './IconButton';
 function SpinnerIconButton(props) {
   const {
     name,
-    spinningName,
-    isDisabled,
-    isSpinning,
+    spinningName = icons.SPINNER,
+    isDisabled = false,
+    isSpinning = false,
     ...otherProps
   } = props;
 
@@ -24,15 +24,9 @@ function SpinnerIconButton(props) {
 
 SpinnerIconButton.propTypes = {
   name: PropTypes.object.isRequired,
-  spinningName: PropTypes.object.isRequired,
-  isDisabled: PropTypes.bool.isRequired,
-  isSpinning: PropTypes.bool.isRequired
-};
-
-SpinnerIconButton.defaultProps = {
-  spinningName: icons.SPINNER,
-  isDisabled: false,
-  isSpinning: false
+  spinningName: PropTypes.object,
+  isDisabled: PropTypes.bool,
+  isSpinning: PropTypes.bool
 };
 
 export default SpinnerIconButton;

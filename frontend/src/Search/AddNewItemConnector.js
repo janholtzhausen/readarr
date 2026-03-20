@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
+import { withRouter } from 'Components/Router/RouterContext';
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
 import { clearSearchResults, getSearchResults } from 'Store/Actions/searchActions';
@@ -11,7 +12,7 @@ function createMapStateToProps() {
   return createSelector(
     (state) => state.search,
     (state) => state.authors.items.length,
-    (state) => state.router.location,
+    (state, { location }) => location,
     (search, existingAuthorsCount, location) => {
       const { params } = parseUrl(location.search);
 
@@ -96,9 +97,10 @@ class AddNewItemConnector extends Component {
 
 AddNewItemConnector.propTypes = {
   term: PropTypes.string,
+  location: PropTypes.shape({ search: PropTypes.string.isRequired }).isRequired,
   getSearchResults: PropTypes.func.isRequired,
   clearSearchResults: PropTypes.func.isRequired,
   fetchRootFolders: PropTypes.func.isRequired
 };
 
-export default connect(createMapStateToProps, mapDispatchToProps)(AddNewItemConnector);
+export default withRouter(connect(createMapStateToProps, mapDispatchToProps)(AddNewItemConnector));

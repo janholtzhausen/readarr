@@ -6,14 +6,12 @@ import { icons } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 import styles from './BookStatusCell.css';
 
-function BookStatusCell(props) {
-  const {
-    className,
-    monitored,
-    component: Component,
-    ...otherProps
-  } = props;
-
+function BookStatusCell({
+  className = styles.status,
+  monitored,
+  component: Component = VirtualTableRowCell,
+  ...otherProps
+}) {
   return (
     <Component
       className={className}
@@ -29,14 +27,9 @@ function BookStatusCell(props) {
 }
 
 BookStatusCell.propTypes = {
-  className: PropTypes.string.isRequired,
+  className: PropTypes.string,
   monitored: PropTypes.bool.isRequired,
   component: PropTypes.elementType
-};
-
-BookStatusCell.defaultProps = {
-  className: styles.status,
-  component: VirtualTableRowCell
 };
 
 export default BookStatusCell;

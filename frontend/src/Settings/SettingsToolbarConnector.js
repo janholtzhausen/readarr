@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
+import { withRouter } from 'Components/Router/RouterContext';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
 import { toggleAdvancedSettings } from 'Store/Actions/settingsActions';
 import SettingsToolbar from './SettingsToolbar';
 
@@ -33,7 +33,13 @@ class SettingsToolbarConnector extends Component {
   }
 
   componentDidMount() {
-    this._unblock = this.props.history.block(this.routerWillLeave);
+    this.updateNavigationBlocker();
+  }
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.hasPendingChanges !== this.props.hasPendingChanges) {
+      this.updateNavigationBlocker();
+    }
   }
 
   componentWillUnmount() {
@@ -44,6 +50,17 @@ class SettingsToolbarConnector extends Component {
 
   //
   // Control
+
+  updateNavigationBlocker = () => {
+    if (this._unblock) {
+      this._unblock();
+      this._unblock = null;
+    }
+
+    if (this.props.hasPendingChanges) {
+      this._unblock = this.props.history.block(this.routerWillLeave);
+    }
+  };
 
   routerWillLeave = (nextLocation, nextLocationAction) => {
     if (this.state.confirmed) {

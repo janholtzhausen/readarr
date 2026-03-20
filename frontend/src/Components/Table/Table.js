@@ -28,9 +28,9 @@ function getTableHeaderCellProps(props) {
 
 function Table(props) {
   const {
-    className,
-    horizontalScroll,
-    selectAll,
+    className = styles.table,
+    horizontalScroll = true,
+    selectAll = false,
     columns,
     optionsComponent,
     pageSize,
@@ -123,8 +123,8 @@ function Table(props) {
 Table.propTypes = {
   ...TableHeaderCell.props,
   className: PropTypes.string,
-  horizontalScroll: PropTypes.bool.isRequired,
-  selectAll: PropTypes.bool.isRequired,
+  horizontalScroll: PropTypes.bool,
+  selectAll: PropTypes.bool,
   columns: PropTypes.arrayOf(PropTypes.object).isRequired,
   optionsComponent: PropTypes.elementType,
   pageSize: PropTypes.number,
@@ -132,12 +132,6 @@ Table.propTypes = {
   children: PropTypes.node,
   onSortPress: PropTypes.func,
   onTableOptionChange: PropTypes.func
-};
-
-Table.defaultProps = {
-  className: styles.table,
-  horizontalScroll: true,
-  selectAll: false
 };
 
 export default Table;

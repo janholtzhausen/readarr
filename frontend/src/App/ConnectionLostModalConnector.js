@@ -1,12 +1,15 @@
-import { connect } from 'react-redux';
+import React from 'react';
 import ConnectionLostModal from './ConnectionLostModal';
 
-function createMapDispatchToProps(dispatch, props) {
-  return {
-    onModalClose() {
-      location.reload();
-    }
-  };
+function ConnectionLostModalConnector(props) {
+  return (
+    <ConnectionLostModal
+      {...props}
+      onModalClose={() => {
+        location.reload();
+      }}
+    />
+  );
 }
 
-export default connect(undefined, createMapDispatchToProps)(ConnectionLostModal);
+export default ConnectionLostModalConnector;

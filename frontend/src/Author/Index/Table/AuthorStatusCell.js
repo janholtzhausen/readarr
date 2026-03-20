@@ -7,15 +7,13 @@ import { icons } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 import styles from './AuthorStatusCell.css';
 
-function AuthorStatusCell(props) {
-  const {
-    className,
-    monitored,
-    status,
-    component: Component,
-    ...otherProps
-  } = props;
-
+function AuthorStatusCell({
+  className = styles.status,
+  monitored,
+  status,
+  component: Component = VirtualTableRowCell,
+  ...otherProps
+}) {
   const statusDetails = getAuthorStatusDetails(status);
 
   return (
@@ -39,15 +37,10 @@ function AuthorStatusCell(props) {
 }
 
 AuthorStatusCell.propTypes = {
-  className: PropTypes.string.isRequired,
+  className: PropTypes.string,
   monitored: PropTypes.bool.isRequired,
   status: PropTypes.string.isRequired,
   component: PropTypes.elementType
-};
-
-AuthorStatusCell.defaultProps = {
-  className: styles.status,
-  component: VirtualTableRowCell
 };
 
 export default AuthorStatusCell;

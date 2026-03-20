@@ -1,7 +1,6 @@
 import _ from 'lodash';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import { CellMeasurer, CellMeasurerCache } from 'react-virtualized';
 import NoAuthor from 'Author/NoAuthor';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import FilterMenu from 'Components/Menu/FilterMenu';
@@ -67,11 +66,6 @@ class Bookshelf extends Component {
       lastToggled: null,
       selectedState: {}
     };
-
-    this.cache = new CellMeasurerCache({
-      defaultHeight: 100,
-      fixedWidth: true
-    });
   }
 
   componentDidMount() {
@@ -93,8 +87,6 @@ class Bookshelf extends Component {
       this.onSelectAllChange({ value: false });
     }
 
-    // nasty hack to fix react-virtualized jumping incorrectly
-    // due to variable row heights
     if (scrollIndex != null) {
       if (jumpCount === 0) {
         this.setState({
@@ -228,7 +220,7 @@ class Bookshelf extends Component {
     return bookRowsPerAuthor * 23 + 16;
   };
 
-  rowRenderer = ({ key, rowIndex, parent, style }) => {
+  rowRenderer = ({ key, rowIndex, style }) => {
     const {
       items
     } = this.props;
@@ -240,27 +232,17 @@ class Bookshelf extends Component {
     const item = items[rowIndex];
 
     return (
-      <CellMeasurer
+      <VirtualTableRow
         key={key}
-        cache={this.cache}
-        parent={parent}
-        columnIndex={0}
-        rowIndex={rowIndex}
+        style={style}
       >
-        {({ registerChild }) => (
-          <VirtualTableRow
-            ref={registerChild}
-            style={style}
-          >
-            <BookStudioRowConnector
-              key={item.id}
-              authorId={item.id}
-              isSelected={selectedState[item.id]}
-              onSelectedChange={this.onSelectedChange}
-            />
-          </VirtualTableRow>
-        )}
-      </CellMeasurer>
+        <BookStudioRowConnector
+          key={item.id}
+          authorId={item.id}
+          isSelected={selectedState[item.id]}
+          onSelectedChange={this.onSelectedChange}
+        />
+      </VirtualTableRow>
     );
   };
 
@@ -305,7 +287,6 @@ class Bookshelf extends Component {
     this.setJumpBarItems();
     this.setSelectedState();
     this.setState({ estimatedRowSize: this.estimateRowHeight(width) });
-    this.cache.clearAll();
   };
 
   //
@@ -395,8 +376,7 @@ class Bookshelf extends Component {
                     }
                     sortKey={sortKey}
                     sortDirection={sortDirection}
-                    deferredMeasurementCache={this.cache}
-                    rowHeight={this.cache.rowHeight}
+                    rowHeight={estimatedRowSize}
                     estimatedRowSize={estimatedRowSize}
                     onRecompute={this.onGridRecompute}
                   />

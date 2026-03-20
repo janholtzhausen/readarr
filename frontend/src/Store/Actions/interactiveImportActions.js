@@ -1,5 +1,5 @@
 import moment from 'moment';
-import { createAction } from 'redux-actions';
+import { createAction } from 'Store/reduxActionsCompat';
 import { batchActions } from 'redux-batched-actions';
 import { sortDirections } from 'Helpers/Props';
 import { createThunk, handleThunks } from 'Store/thunks';

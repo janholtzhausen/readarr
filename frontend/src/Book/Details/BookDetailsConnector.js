@@ -28,13 +28,14 @@ const selectBookFiles = createSelector(
       error
     } = bookFiles;
 
-    const hasBookFiles = !!items.length;
+      const hasBookFiles = !!items.length;
 
-    return {
-      isBookFilesFetching: isFetching,
-      isBookFilesPopulated: isPopulated,
-      bookFilesError: error,
-      hasBookFiles
+      return {
+        primaryBookFile: items[0] || null,
+        isBookFilesFetching: isFetching,
+        isBookFilesPopulated: isPopulated,
+        bookFilesError: error,
+        hasBookFiles
     };
   }
 );
@@ -61,6 +62,7 @@ function createMapStateToProps() {
       }
 
       const {
+        primaryBookFile,
         isBookFilesFetching,
         isBookFilesPopulated,
         bookFilesError,
@@ -101,6 +103,7 @@ function createMapStateToProps() {
         isPopulated,
         bookFilesError,
         hasBookFiles,
+        primaryBookFile,
         previousBook,
         nextBook,
         isSmallScreen: dimensions.isSmallScreen

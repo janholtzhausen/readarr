@@ -1,4 +1,4 @@
-import { createAction } from 'redux-actions';
+import { createAction } from 'Store/reduxActionsCompat';
 import { filterTypes, sortDirections } from 'Helpers/Props';
 import { setAppValue } from 'Store/Actions/appActions';
 import { createThunk, handleThunks } from 'Store/thunks';

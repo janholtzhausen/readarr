@@ -1,4 +1,4 @@
-import { createAction } from 'redux-actions';
+import { createAction } from 'Store/reduxActionsCompat';
 import createFetchHandler from 'Store/Actions/Creators/createFetchHandler';
 import createSaveHandler from 'Store/Actions/Creators/createSaveHandler';
 import createSetSettingValueReducer from 'Store/Actions/Creators/Reducers/createSetSettingValueReducer';

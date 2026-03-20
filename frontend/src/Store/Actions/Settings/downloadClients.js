@@ -1,4 +1,4 @@
-import { createAction } from 'redux-actions';
+import { createAction } from 'Store/reduxActionsCompat';
 import { sortDirections } from 'Helpers/Props';
 import createBulkEditItemHandler from 'Store/Actions/Creators/createBulkEditItemHandler';
 import createBulkRemoveItemHandler from 'Store/Actions/Creators/createBulkRemoveItemHandler';

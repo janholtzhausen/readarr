@@ -60,7 +60,7 @@ function getSelectValues(selectOptions) {
 
 function ProviderFieldFormGroup(props) {
   const {
-    advancedSettings,
+    advancedSettings = false,
     name,
     label,
     helpText,
@@ -121,7 +121,7 @@ const selectOptionsShape = {
 };
 
 ProviderFieldFormGroup.propTypes = {
-  advancedSettings: PropTypes.bool.isRequired,
+  advancedSettings: PropTypes.bool,
   name: PropTypes.string.isRequired,
   label: PropTypes.string.isRequired,
   helpText: PropTypes.string,
@@ -138,10 +138,6 @@ ProviderFieldFormGroup.propTypes = {
   selectOptions: PropTypes.arrayOf(PropTypes.shape(selectOptionsShape)),
   selectOptionsProviderAction: PropTypes.string,
   onChange: PropTypes.func.isRequired
-};
-
-ProviderFieldFormGroup.defaultProps = {
-  advancedSettings: false
 };
 
 export default ProviderFieldFormGroup;

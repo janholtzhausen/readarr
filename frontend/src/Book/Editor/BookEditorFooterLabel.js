@@ -4,13 +4,11 @@ import SpinnerIcon from 'Components/SpinnerIcon';
 import { icons } from 'Helpers/Props';
 import styles from './BookEditorFooterLabel.css';
 
-function BookEditorFooterLabel(props) {
-  const {
-    className,
-    label,
-    isSaving
-  } = props;
-
+function BookEditorFooterLabel({
+  className = styles.label,
+  label,
+  isSaving
+}) {
   return (
     <div className={className}>
       {label}
@@ -28,13 +26,9 @@ function BookEditorFooterLabel(props) {
 }
 
 BookEditorFooterLabel.propTypes = {
-  className: PropTypes.string.isRequired,
+  className: PropTypes.string,
   label: PropTypes.string.isRequired,
   isSaving: PropTypes.bool.isRequired
-};
-
-BookEditorFooterLabel.defaultProps = {
-  className: styles.label
 };
 
 export default BookEditorFooterLabel;

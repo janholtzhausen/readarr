@@ -6,14 +6,12 @@ import SpinnerButton from 'Components/Link/SpinnerButton';
 import { kinds } from 'Helpers/Props';
 import styles from './FormInputButton.css';
 
-function FormInputButton(props) {
-  const {
-    className,
-    canSpin,
-    isLastButton,
-    ...otherProps
-  } = props;
-
+function FormInputButton({
+  className = styles.button,
+  canSpin = false,
+  isLastButton = true,
+  ...otherProps
+}) {
   if (canSpin) {
     return (
       <SpinnerButton
@@ -40,15 +38,9 @@ function FormInputButton(props) {
 }
 
 FormInputButton.propTypes = {
-  className: PropTypes.string.isRequired,
-  isLastButton: PropTypes.bool.isRequired,
-  canSpin: PropTypes.bool.isRequired
-};
-
-FormInputButton.defaultProps = {
-  className: styles.button,
-  isLastButton: true,
-  canSpin: false
+  className: PropTypes.string,
+  isLastButton: PropTypes.bool,
+  canSpin: PropTypes.bool
 };
 
 export default FormInputButton;

@@ -8,17 +8,19 @@ import styles from './PageToolbarButton.css';
 
 function PageToolbarButton(props) {
   const {
+    className = '',
     label,
     iconName,
-    spinningName,
-    isDisabled,
-    isSpinning,
+    spinningName = icons.SPINNER,
+    isDisabled = false,
+    isSpinning = false,
     ...otherProps
   } = props;
 
   return (
     <Link
       className={classNames(
+        className,
         styles.toolbarButton,
         isDisabled && styles.isDisabled
       )}
@@ -41,17 +43,12 @@ function PageToolbarButton(props) {
 }
 
 PageToolbarButton.propTypes = {
+  className: PropTypes.string,
   label: PropTypes.string.isRequired,
   iconName: PropTypes.object.isRequired,
   spinningName: PropTypes.object,
   isSpinning: PropTypes.bool,
   isDisabled: PropTypes.bool
-};
-
-PageToolbarButton.defaultProps = {
-  spinningName: icons.SPINNER,
-  isDisabled: false,
-  isSpinning: false
 };
 
 export default PageToolbarButton;

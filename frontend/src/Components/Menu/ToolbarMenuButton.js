@@ -6,14 +6,12 @@ import MenuButton from 'Components/Menu/MenuButton';
 import { icons } from 'Helpers/Props';
 import styles from './ToolbarMenuButton.css';
 
-function ToolbarMenuButton(props) {
-  const {
-    iconName,
-    indicator,
-    text,
-    ...otherProps
-  } = props;
-
+function ToolbarMenuButton({
+  iconName,
+  indicator = false,
+  text,
+  ...otherProps
+}) {
   return (
     <MenuButton
       className={styles.menuButton}
@@ -53,11 +51,7 @@ function ToolbarMenuButton(props) {
 ToolbarMenuButton.propTypes = {
   iconName: PropTypes.object.isRequired,
   text: PropTypes.string,
-  indicator: PropTypes.bool.isRequired
-};
-
-ToolbarMenuButton.defaultProps = {
-  indicator: false
+  indicator: PropTypes.bool
 };
 
 export default ToolbarMenuButton;

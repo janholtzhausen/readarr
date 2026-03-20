@@ -4,7 +4,7 @@ import Link from 'Components/Link/Link';
 import TableRowCell from './TableRowCell';
 import styles from './TableRowCellButton.css';
 
-function TableRowCellButton({ className, ...otherProps }) {
+function TableRowCellButton({ className = styles.cell, ...otherProps }) {
   return (
     <Link
       className={className}
@@ -15,11 +15,7 @@ function TableRowCellButton({ className, ...otherProps }) {
 }
 
 TableRowCellButton.propTypes = {
-  className: PropTypes.string.isRequired
-};
-
-TableRowCellButton.defaultProps = {
-  className: styles.cell
+  className: PropTypes.string
 };
 
 export default TableRowCellButton;

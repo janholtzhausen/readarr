@@ -1,15 +1,12 @@
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
-import { Grid, WindowScroller } from 'react-virtualized';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { FixedSizeGrid } from 'react-window';
 import BookIndexItemConnector from 'Book/Index/BookIndexItemConnector';
 import Measure from 'Components/Measure';
 import dimensions from 'Styles/Variables/dimensions';
 import getIndexOfFirstCharacter from 'Utilities/Array/getIndexOfFirstCharacter';
-import hasDifferentItemsOrOrder from 'Utilities/Object/hasDifferentItemsOrOrder';
 import BookIndexPoster from './BookIndexPoster';
-import styles from './BookIndexPosters.css';
 
-// Poster container dimensions
 const columnPadding = parseInt(dimensions.authorIndexColumnPadding);
 const columnPaddingSmallScreen = parseInt(dimensions.authorIndexColumnPaddingSmallScreen);
 const progressBarHeight = parseInt(dimensions.progressBarSmallHeight);
@@ -23,7 +20,7 @@ const additionalColumnCount = {
 
 function calculateColumnWidth(width, posterSize, isSmallScreen) {
   const maxiumColumnWidth = isSmallScreen ? 172 : 182;
-  const columns = Math.floor(width / maxiumColumnWidth);
+  const columns = Math.max(Math.floor(width / maxiumColumnWidth), 1);
   const remainder = width % maxiumColumnWidth;
 
   if (remainder === 0 && posterSize === 'large') {
@@ -81,7 +78,6 @@ function calculateRowHeight(posterHeight, sortKey, isSmallScreen, posterOptions)
       }
       break;
     default:
-      // No need to add a height of 0
   }
 
   return heights.reduce((acc, height) => acc + height, 0);
@@ -91,132 +87,97 @@ function calculatePosterHeight(posterWidth) {
   return Math.ceil((400 / 256) * posterWidth);
 }
 
-class BookIndexPosters extends Component {
+function getWindowScrollTopPosition() {
+  return document.documentElement.scrollTop || document.body.scrollTop || 0;
+}
 
-  //
-  // Lifecycle
+function BookIndexPosters(props) {
+  const {
+    items,
+    sortKey,
+    posterOptions,
+    jumpToCharacter,
+    scrollTop,
+    showRelativeDates,
+    shortDateFormat,
+    timeFormat,
+    selectedState,
+    isEditorActive,
+    isSmallScreen,
+    scroller,
+    onSelectedChange
+  } = props;
 
-  constructor(props, context) {
-    super(props, context);
+  const gridRef = useRef(null);
+  const [width, setWidth] = useState(0);
+  const padding = isSmallScreen ? columnPaddingSmallScreen : columnPadding;
 
-    this.state = {
-      width: 0,
-      columnWidth: 182,
-      columnCount: 1,
-      posterWidth: 162,
-      posterHeight: 253,
-      rowHeight: calculateRowHeight(253, null, props.isSmallScreen, {}),
-      scrollRestored: false
+  const columnWidth = useMemo(() => {
+    return calculateColumnWidth(width || 182, posterOptions.size, isSmallScreen);
+  }, [width, posterOptions.size, isSmallScreen]);
+
+  const columnCount = useMemo(() => {
+    return Math.max(Math.floor((width || columnWidth) / columnWidth), 1);
+  }, [width, columnWidth]);
+
+  const posterWidth = columnWidth - padding * 2;
+  const posterHeight = calculatePosterHeight(posterWidth);
+  const rowHeight = useMemo(() => {
+    return calculateRowHeight(posterHeight, sortKey, isSmallScreen, posterOptions);
+  }, [posterHeight, sortKey, isSmallScreen, posterOptions]);
+
+  useEffect(() => {
+    if (scrollTop && gridRef.current) {
+      gridRef.current.scrollTo({ scrollLeft: 0, scrollTop });
+    }
+  }, [scrollTop]);
+
+  useEffect(() => {
+    if (jumpToCharacter == null || !gridRef.current) {
+      return;
+    }
+
+    const index = getIndexOfFirstCharacter(items, sortKey, jumpToCharacter);
+
+    if (index != null) {
+      const rowIndex = Math.floor(index / columnCount);
+      gridRef.current.scrollToItem({
+        rowIndex,
+        columnIndex: 0,
+        align: 'start'
+      });
+    }
+  }, [items, sortKey, jumpToCharacter, columnCount]);
+
+  useEffect(() => {
+    if (!scroller) {
+      return undefined;
+    }
+
+    const currentScrollListener = isSmallScreen ? window : scroller;
+
+    const handleScroll = () => {
+      const { offsetTop = 0 } = scroller;
+      const nextScrollTop =
+        (isSmallScreen ? getWindowScrollTopPosition() : scroller.scrollTop) - offsetTop;
+
+      gridRef.current?.scrollTo({ scrollLeft: 0, scrollTop: nextScrollTop });
     };
 
-    this._isInitialized = false;
-    this._grid = null;
-    this._padding = props.isSmallScreen ? columnPaddingSmallScreen : columnPadding;
-  }
+    currentScrollListener.addEventListener('scroll', handleScroll);
 
-  componentDidUpdate(prevProps, prevState) {
-    const {
-      items,
-      sortKey,
-      posterOptions,
-      jumpToCharacter,
-      isSmallScreen,
-      isEditorActive,
-      scrollTop,
-      selectedState
-    } = this.props;
+    return () => {
+      currentScrollListener.removeEventListener('scroll', handleScroll);
+    };
+  }, [isSmallScreen, scroller]);
 
-    const {
-      width,
-      columnWidth,
-      columnCount,
-      rowHeight,
-      scrollRestored
-    } = this.state;
+  const cellRenderer = ({ columnIndex, rowIndex, style }) => {
+    const bookIdx = rowIndex * columnCount + columnIndex;
+    const book = items[bookIdx];
 
-    if (prevProps.sortKey !== sortKey ||
-        prevProps.posterOptions !== posterOptions) {
-      this.calculateGrid(width, isSmallScreen);
+    if (!book) {
+      return null;
     }
-
-    if (this._grid &&
-        (prevState.width !== width ||
-            prevState.columnWidth !== columnWidth ||
-            prevState.columnCount !== columnCount ||
-            prevState.rowHeight !== rowHeight ||
-            hasDifferentItemsOrOrder(prevProps.items, items)) ||
-            prevProps.isEditorActive !== isEditorActive ||
-            prevProps.selectedState !== selectedState) {
-      // recomputeGridSize also forces Grid to discard its cache of rendered cells
-      this._grid.recomputeGridSize();
-    }
-
-    if (this._grid && scrollTop !== 0 && !scrollRestored) {
-      this.setState({ scrollRestored: true });
-      this._grid.scrollToPosition({ scrollTop });
-    }
-
-    if (jumpToCharacter != null && jumpToCharacter !== prevProps.jumpToCharacter) {
-      const index = getIndexOfFirstCharacter(items, sortKey, jumpToCharacter);
-
-      if (this._grid && index != null) {
-        const row = Math.floor(index / columnCount);
-
-        this._grid.scrollToCell({
-          rowIndex: row,
-          columnIndex: 0
-        });
-      }
-    }
-  }
-
-  //
-  // Control
-
-  setGridRef = (ref) => {
-    this._grid = ref;
-  };
-
-  calculateGrid = (width = this.state.width, isSmallScreen) => {
-    const {
-      sortKey,
-      posterOptions
-    } = this.props;
-
-    const columnWidth = calculateColumnWidth(width, posterOptions.size, isSmallScreen);
-    const columnCount = Math.max(Math.floor(width / columnWidth), 1);
-    const posterWidth = columnWidth - this._padding * 2;
-    const posterHeight = calculatePosterHeight(posterWidth);
-    const rowHeight = calculateRowHeight(posterHeight, sortKey, isSmallScreen, posterOptions);
-
-    this.setState({
-      width,
-      columnWidth,
-      columnCount,
-      posterWidth,
-      posterHeight,
-      rowHeight
-    });
-  };
-
-  cellRenderer = ({ key, rowIndex, columnIndex, style }) => {
-    const {
-      items,
-      sortKey,
-      posterOptions,
-      showRelativeDates,
-      shortDateFormat,
-      timeFormat,
-      selectedState,
-      isEditorActive,
-      onSelectedChange
-    } = this.props;
-
-    const {
-      posterWidth,
-      posterHeight,
-      columnCount
-    } = this.state;
 
     const {
       detailedProgressBar,
@@ -226,19 +187,11 @@ class BookIndexPosters extends Component {
       showQualityProfile
     } = posterOptions;
 
-    const bookIdx = rowIndex * columnCount + columnIndex;
-    const book = items[bookIdx];
-
-    if (!book) {
-      return null;
-    }
-
     return (
       <div
-        key={key}
         style={{
           ...style,
-          padding: this._padding
+          padding
         }}
       >
         <BookIndexItemConnector
@@ -266,71 +219,30 @@ class BookIndexPosters extends Component {
     );
   };
 
-  //
-  // Listeners
-
-  onMeasure = ({ width }) => {
-    this.calculateGrid(width, this.props.isSmallScreen);
-  };
-
-  //
-  // Render
-
-  render() {
-    const {
-      scroller,
-      items,
-      isSmallScreen
-    } = this.props;
-
-    const {
-      width,
-      columnWidth,
-      columnCount,
-      rowHeight
-    } = this.state;
-
-    const rowCount = Math.ceil(items.length / columnCount);
-
-    return (
-      <Measure
-        onMeasure={this.onMeasure}
-      >
-        <WindowScroller
-          scrollElement={isSmallScreen ? undefined : scroller}
-        >
-          {({ height, registerChild, onChildScroll, scrollTop }) => {
-            if (!height) {
-              return <div />;
-            }
-
-            return (
-              <div ref={registerChild}>
-                <Grid
-                  ref={this.setGridRef}
-                  className={styles.grid}
-                  autoHeight={true}
-                  height={height}
-                  columnCount={columnCount}
-                  columnWidth={columnWidth}
-                  rowCount={rowCount}
-                  rowHeight={rowHeight}
-                  width={width}
-                  onScroll={onChildScroll}
-                  scrollTop={scrollTop}
-                  overscanRowCount={2}
-                  cellRenderer={this.cellRenderer}
-                  scrollToAlignment={'start'}
-                  isScrollingOptOut={true}
-                />
-              </div>
-            );
-          }
-          }
-        </WindowScroller>
-      </Measure>
-    );
-  }
+  return (
+    <Measure onMeasure={({ width: nextWidth }) => setWidth(nextWidth)}>
+      {
+        width > 0 ?
+          <FixedSizeGrid
+            ref={gridRef}
+            style={{
+              width: '100%',
+              overflowX: 'hidden',
+              overflowY: 'hidden'
+            }}
+            width={width}
+            height={window.innerHeight}
+            columnCount={columnCount}
+            columnWidth={columnWidth}
+            rowCount={Math.ceil(items.length / columnCount)}
+            rowHeight={rowHeight}
+          >
+            {cellRenderer}
+          </FixedSizeGrid> :
+          <div />
+      }
+    </Measure>
+  );
 }
 
 BookIndexPosters.propTypes = {
@@ -338,15 +250,15 @@ BookIndexPosters.propTypes = {
   sortKey: PropTypes.string,
   posterOptions: PropTypes.object.isRequired,
   jumpToCharacter: PropTypes.string,
-  scrollTop: PropTypes.number.isRequired,
-  scroller: PropTypes.instanceOf(Element).isRequired,
+  scrollTop: PropTypes.number,
   showRelativeDates: PropTypes.bool.isRequired,
   shortDateFormat: PropTypes.string.isRequired,
-  isSmallScreen: PropTypes.bool.isRequired,
   timeFormat: PropTypes.string.isRequired,
   selectedState: PropTypes.object.isRequired,
-  onSelectedChange: PropTypes.func.isRequired,
-  isEditorActive: PropTypes.bool.isRequired
+  isEditorActive: PropTypes.bool.isRequired,
+  isSmallScreen: PropTypes.bool.isRequired,
+  scroller: PropTypes.instanceOf(Element).isRequired,
+  onSelectedChange: PropTypes.func.isRequired
 };
 
 export default BookIndexPosters;

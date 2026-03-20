@@ -9,7 +9,7 @@ function RootFolderSelectInputOption(props) {
   const {
     id,
     value,
-    name,
+    name = '',
     freeSpace,
     authorFolder,
     isMissing,
@@ -68,17 +68,13 @@ function RootFolderSelectInputOption(props) {
 
 RootFolderSelectInputOption.propTypes = {
   id: PropTypes.string.isRequired,
-  name: PropTypes.string.isRequired,
+  name: PropTypes.string,
   value: PropTypes.string.isRequired,
   freeSpace: PropTypes.number,
   authorFolder: PropTypes.string,
   isMissing: PropTypes.bool,
   isMobile: PropTypes.bool.isRequired,
   isWindows: PropTypes.bool
-};
-
-RootFolderSelectInputOption.defaultProps = {
-  name: ''
 };
 
 export default RootFolderSelectInputOption;

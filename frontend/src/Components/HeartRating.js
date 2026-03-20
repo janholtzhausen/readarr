@@ -4,7 +4,7 @@ import Icon from 'Components/Icon';
 import { icons } from 'Helpers/Props';
 import styles from './HeartRating.css';
 
-function HeartRating({ rating, iconSize }) {
+function HeartRating({ rating, iconSize = 14 }) {
   return (
     <span className={styles.rating}>
       <Icon
@@ -20,11 +20,7 @@ function HeartRating({ rating, iconSize }) {
 
 HeartRating.propTypes = {
   rating: PropTypes.number.isRequired,
-  iconSize: PropTypes.number.isRequired
-};
-
-HeartRating.defaultProps = {
-  iconSize: 14
+  iconSize: PropTypes.number
 };
 
 export default HeartRating;

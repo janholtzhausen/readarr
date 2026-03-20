@@ -1,8 +1,8 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import TextTruncate from 'react-text-truncate';
 import AuthorPoster from 'Author/AuthorPoster';
 import { getAuthorStatusDetails } from 'Author/AuthorStatus';
+import ClampText from 'Components/Text/ClampText';
 import HeartRating from 'Components/HeartRating';
 import Icon from 'Components/Icon';
 import Label from 'Components/Label';
@@ -304,7 +304,7 @@ class AuthorDetailsHeader extends Component {
               onMeasure={this.onOverviewMeasure}
               className={styles.overview}
             >
-              <TextTruncate
+              <ClampText
                 line={Math.floor(overviewHeight / (defaultFontSize * lineHeight))}
                 text={stripHtml(overview)}
               />

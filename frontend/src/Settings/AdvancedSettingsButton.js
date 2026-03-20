@@ -7,13 +7,11 @@ import { icons } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 import styles from './AdvancedSettingsButton.css';
 
-function AdvancedSettingsButton(props) {
-  const {
-    advancedSettings,
-    onAdvancedSettingsPress,
-    showLabel
-  } = props;
-
+function AdvancedSettingsButton({
+  advancedSettings,
+  onAdvancedSettingsPress,
+  showLabel = true
+}) {
   return (
     <Link
       className={styles.button}
@@ -60,11 +58,7 @@ function AdvancedSettingsButton(props) {
 AdvancedSettingsButton.propTypes = {
   advancedSettings: PropTypes.bool.isRequired,
   onAdvancedSettingsPress: PropTypes.func.isRequired,
-  showLabel: PropTypes.bool.isRequired
-};
-
-AdvancedSettingsButton.defaultProps = {
-  showLabel: true
+  showLabel: PropTypes.bool
 };
 
 export default AdvancedSettingsButton;

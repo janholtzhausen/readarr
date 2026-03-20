@@ -1,4 +1,4 @@
-import { createAction } from 'redux-actions';
+import { createAction } from 'Store/reduxActionsCompat';
 import { createThunk, handleThunks } from 'Store/thunks';
 import requestAction from 'Utilities/requestAction';
 import getSectionState from 'Utilities/State/getSectionState';

@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { createAction } from 'redux-actions';
+import { createAction } from 'Store/reduxActionsCompat';
 import { batchActions } from 'redux-batched-actions';
 import { clearPendingChanges, set, update } from 'Store/Actions/baseActions';
 import createFetchHandler from 'Store/Actions/Creators/createFetchHandler';

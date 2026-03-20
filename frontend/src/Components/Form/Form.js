@@ -4,15 +4,13 @@ import Alert from 'Components/Alert';
 import { kinds } from 'Helpers/Props';
 import styles from './Form.css';
 
-function Form(props) {
-  const {
-    children,
-    validationErrors,
-    validationWarnings,
-    // eslint-disable-next-line no-unused-vars
-    ...otherProps
-  } = props;
-
+function Form({
+  children,
+  validationErrors = [],
+  validationWarnings = [],
+  // eslint-disable-next-line no-unused-vars
+  ...otherProps
+}) {
   return (
     <div>
       {
@@ -54,13 +52,8 @@ function Form(props) {
 
 Form.propTypes = {
   children: PropTypes.node.isRequired,
-  validationErrors: PropTypes.arrayOf(PropTypes.object).isRequired,
-  validationWarnings: PropTypes.arrayOf(PropTypes.object).isRequired
-};
-
-Form.defaultProps = {
-  validationErrors: [],
-  validationWarnings: []
+  validationErrors: PropTypes.arrayOf(PropTypes.object),
+  validationWarnings: PropTypes.arrayOf(PropTypes.object)
 };
 
 export default Form;

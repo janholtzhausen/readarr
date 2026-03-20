@@ -5,19 +5,18 @@ import { ColorImpairedConsumer } from 'App/ColorImpairedContext';
 import { kinds, sizes } from 'Helpers/Props';
 import styles from './ProgressBar.css';
 
-function ProgressBar(props) {
-  const {
-    className,
-    containerClassName,
-    title,
-    progress,
-    precision,
-    showText,
-    text,
-    kind,
-    size,
-    width
-  } = props;
+function ProgressBar({
+  className = styles.progressBar,
+  containerClassName = styles.container,
+  title,
+  progress,
+  precision = 1,
+  showText = false,
+  text,
+  kind = kinds.PRIMARY,
+  size = sizes.MEDIUM,
+  width
+}) {
 
   const progressPercent = `${progress.toFixed(precision)}%`;
   const progressText = text || progressPercent;
@@ -93,21 +92,12 @@ ProgressBar.propTypes = {
   containerClassName: PropTypes.string,
   title: PropTypes.string,
   progress: PropTypes.number.isRequired,
-  precision: PropTypes.number.isRequired,
-  showText: PropTypes.bool.isRequired,
+  precision: PropTypes.number,
+  showText: PropTypes.bool,
   text: PropTypes.string,
-  kind: PropTypes.oneOf(kinds.all).isRequired,
-  size: PropTypes.oneOf(sizes.all).isRequired,
+  kind: PropTypes.oneOf(kinds.all),
+  size: PropTypes.oneOf(sizes.all),
   width: PropTypes.number
-};
-
-ProgressBar.defaultProps = {
-  className: styles.progressBar,
-  containerClassName: styles.container,
-  precision: 1,
-  showText: false,
-  kind: kinds.PRIMARY,
-  size: sizes.MEDIUM
 };
 
 export default ProgressBar;

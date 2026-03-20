@@ -19,6 +19,7 @@ import InteractiveSearchFilterMenuConnector from 'InteractiveSearch/InteractiveS
 import InteractiveSearchTable from 'InteractiveSearch/InteractiveSearchTable';
 import OrganizePreviewModalConnector from 'Organize/OrganizePreviewModalConnector';
 import RetagPreviewModalConnector from 'Retag/RetagPreviewModalConnector';
+import getPathWithUrlBase from 'Utilities/getPathWithUrlBase';
 import translate from 'Utilities/String/translate';
 import BookDetailsHeaderConnector from './BookDetailsHeaderConnector';
 import styles from './BookDetails.css';
@@ -82,6 +83,29 @@ class BookDetails extends Component {
     this.setState({ selectedTabIndex: index });
   };
 
+  onDownloadPress = (format) => {
+    const { primaryBookFile } = this.props;
+    const primaryBookFileId = primaryBookFile?.id;
+
+    if (!primaryBookFileId) {
+      return;
+    }
+
+    window.open(this.getDownloadUrl(primaryBookFileId, format), '_blank', 'noopener,noreferrer');
+  };
+
+  getDownloadUrl = (bookFileId, format) => {
+    const search = new URLSearchParams({
+      apikey: window.Readarr.apiKey
+    });
+
+    if (format) {
+      search.set('format', format);
+    }
+
+    return getPathWithUrlBase(`/api/v1/bookfile/${bookFileId}/download?${search.toString()}`);
+  };
+
   //
   // Render
 
@@ -94,6 +118,7 @@ class BookDetails extends Component {
       isPopulated,
       bookFilesError,
       hasBookFiles,
+      primaryBookFile,
       author,
       previousBook,
       nextBook,
@@ -115,6 +140,7 @@ class BookDetails extends Component {
       selectedTabIndex
     } = this.state;
 
+    const primaryBookFileId = primaryBookFile?.id;
     return (
       <PageContent title={title}>
         <PageToolbar>
@@ -133,6 +159,30 @@ class BookDetails extends Component {
               iconName={icons.SEARCH}
               isSpinning={isSearching}
               onPress={onSearchPress}
+            />
+
+            <PageToolbarButton
+              className={styles.downloadToolbarButton}
+              label="File"
+              iconName={icons.DOWNLOAD}
+              isDisabled={!primaryBookFileId}
+              onPress={() => this.onDownloadPress()}
+            />
+
+            <PageToolbarButton
+              className={styles.downloadToolbarButton}
+              label="EPUB"
+              iconName={icons.BOOK_OPEN}
+              isDisabled={!primaryBookFileId}
+              onPress={() => this.onDownloadPress('epub')}
+            />
+
+            <PageToolbarButton
+              className={styles.downloadToolbarButton}
+              label="AZW3"
+              iconName={icons.TABLET}
+              isDisabled={!primaryBookFileId}
+              onPress={() => this.onDownloadPress('azw3')}
             />
 
             <PageToolbarSeparator />

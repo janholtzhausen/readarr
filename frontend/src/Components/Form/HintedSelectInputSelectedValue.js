@@ -5,16 +5,14 @@ import Label from 'Components/Label';
 import EnhancedSelectInputSelectedValue from './EnhancedSelectInputSelectedValue';
 import styles from './HintedSelectInputSelectedValue.css';
 
-function HintedSelectInputSelectedValue(props) {
-  const {
-    value,
-    values,
-    hint,
-    isMultiSelect,
-    includeHint,
-    ...otherProps
-  } = props;
-
+function HintedSelectInputSelectedValue({
+  value,
+  values,
+  hint,
+  isMultiSelect = false,
+  includeHint = true,
+  ...otherProps
+}) {
   const valuesMap = isMultiSelect && _.keyBy(values, 'key');
 
   return (
@@ -56,13 +54,8 @@ HintedSelectInputSelectedValue.propTypes = {
   value: PropTypes.oneOfType([PropTypes.number, PropTypes.string, PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, PropTypes.number]))]).isRequired,
   values: PropTypes.arrayOf(PropTypes.object).isRequired,
   hint: PropTypes.string,
-  isMultiSelect: PropTypes.bool.isRequired,
-  includeHint: PropTypes.bool.isRequired
-};
-
-HintedSelectInputSelectedValue.defaultProps = {
-  isMultiSelect: false,
-  includeHint: true
+  isMultiSelect: PropTypes.bool,
+  includeHint: PropTypes.bool
 };
 
 export default HintedSelectInputSelectedValue;

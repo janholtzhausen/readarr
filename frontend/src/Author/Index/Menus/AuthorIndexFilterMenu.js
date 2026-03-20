@@ -34,8 +34,4 @@ AuthorIndexFilterMenu.propTypes = {
   onFilterSelect: PropTypes.func.isRequired
 };
 
-AuthorIndexFilterMenu.defaultProps = {
-  showCustomFilters: false
-};
-
 export default AuthorIndexFilterMenu;

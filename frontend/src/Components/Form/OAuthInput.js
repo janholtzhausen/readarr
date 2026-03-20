@@ -3,14 +3,12 @@ import React from 'react';
 import SpinnerErrorButton from 'Components/Link/SpinnerErrorButton';
 import { kinds } from 'Helpers/Props';
 
-function OAuthInput(props) {
-  const {
-    label,
-    authorizing,
-    error,
-    onPress
-  } = props;
-
+function OAuthInput({
+  label = 'Start OAuth',
+  authorizing,
+  error,
+  onPress
+}) {
   return (
     <div>
       <SpinnerErrorButton
@@ -26,14 +24,10 @@ function OAuthInput(props) {
 }
 
 OAuthInput.propTypes = {
-  label: PropTypes.string.isRequired,
+  label: PropTypes.string,
   authorizing: PropTypes.bool.isRequired,
   error: PropTypes.object,
   onPress: PropTypes.func.isRequired
-};
-
-OAuthInput.defaultProps = {
-  label: 'Start OAuth'
 };
 
 export default OAuthInput;

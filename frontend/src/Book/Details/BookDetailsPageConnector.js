@@ -1,7 +1,7 @@
-import { push } from 'connected-react-router';
 import _ from 'lodash';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
+import { withRouter } from 'Components/Router/RouterContext';
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
@@ -41,10 +41,6 @@ function createMapStateToProps() {
     }
   );
 }
-
-const mapDispatchToProps = {
-  push
-};
 
 class BookDetailsPageConnector extends Component {
 
@@ -108,9 +104,8 @@ class BookDetailsPageConnector extends Component {
 BookDetailsPageConnector.propTypes = {
   titleSlug: PropTypes.string,
   match: PropTypes.shape({ params: PropTypes.shape({ titleSlug: PropTypes.string.isRequired }).isRequired }).isRequired,
-  push: PropTypes.func.isRequired,
   isFetching: PropTypes.bool.isRequired,
   isPopulated: PropTypes.bool.isRequired
 };
 
-export default connect(createMapStateToProps, mapDispatchToProps)(BookDetailsPageConnector);
+export default withRouter(connect(createMapStateToProps)(BookDetailsPageConnector));

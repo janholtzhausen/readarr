@@ -3,14 +3,12 @@ import React from 'react';
 import { icons } from 'Helpers/Props';
 import Icon from './Icon';
 
-function SpinnerIcon(props) {
-  const {
-    name,
-    spinningName,
-    isSpinning,
-    ...otherProps
-  } = props;
-
+function SpinnerIcon({
+  name,
+  spinningName = icons.SPINNER,
+  isSpinning,
+  ...otherProps
+}) {
   return (
     <Icon
       name={isSpinning ? (spinningName || name) : name}
@@ -22,12 +20,8 @@ function SpinnerIcon(props) {
 
 SpinnerIcon.propTypes = {
   name: PropTypes.object.isRequired,
-  spinningName: PropTypes.object.isRequired,
+  spinningName: PropTypes.object,
   isSpinning: PropTypes.bool.isRequired
-};
-
-SpinnerIcon.defaultProps = {
-  spinningName: icons.SPINNER
 };
 
 export default SpinnerIcon;

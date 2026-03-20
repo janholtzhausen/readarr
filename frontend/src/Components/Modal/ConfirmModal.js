@@ -10,23 +10,21 @@ import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
 import { kinds, sizes } from 'Helpers/Props';
 
-function ConfirmModal(props) {
-  const {
-    isOpen,
-    kind,
-    size,
-    title,
-    message,
-    confirmLabel,
-    cancelLabel,
-    hideCancelButton,
-    isSpinning,
-    onConfirm,
-    onCancel,
-    bindShortcut,
-    unbindShortcut
-  } = props;
-
+function ConfirmModal({
+  isOpen,
+  kind = kinds.PRIMARY,
+  size = sizes.MEDIUM,
+  title,
+  message,
+  confirmLabel = 'OK',
+  cancelLabel = 'Cancel',
+  hideCancelButton,
+  isSpinning = false,
+  onConfirm,
+  onCancel,
+  bindShortcut,
+  unbindShortcut
+}) {
   useEffect(() => {
     if (isOpen) {
       bindShortcut('enter', onConfirm);
@@ -83,19 +81,11 @@ ConfirmModal.propTypes = {
   confirmLabel: PropTypes.string,
   cancelLabel: PropTypes.string,
   hideCancelButton: PropTypes.bool,
-  isSpinning: PropTypes.bool.isRequired,
+  isSpinning: PropTypes.bool,
   onConfirm: PropTypes.func.isRequired,
   onCancel: PropTypes.func.isRequired,
   bindShortcut: PropTypes.func.isRequired,
   unbindShortcut: PropTypes.func.isRequired
-};
-
-ConfirmModal.defaultProps = {
-  kind: kinds.PRIMARY,
-  size: sizes.MEDIUM,
-  confirmLabel: 'OK',
-  cancelLabel: 'Cancel',
-  isSpinning: false
 };
 
 export default keyboardShortcuts(ConfirmModal);

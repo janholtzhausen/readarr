@@ -36,19 +36,17 @@ function getHeaderTitle(eventType) {
   }
 }
 
-function HistoryDetailsModal(props) {
-  const {
-    isOpen,
-    eventType,
-    sourceTitle,
-    data,
-    isMarkingAsFailed,
-    shortDateFormat,
-    timeFormat,
-    onMarkAsFailedPress,
-    onModalClose
-  } = props;
-
+function HistoryDetailsModal({
+  isOpen,
+  eventType,
+  sourceTitle,
+  data,
+  isMarkingAsFailed = false,
+  shortDateFormat,
+  timeFormat,
+  onMarkAsFailedPress,
+  onModalClose
+}) {
   return (
     <Modal
       isOpen={isOpen}
@@ -98,15 +96,11 @@ HistoryDetailsModal.propTypes = {
   eventType: PropTypes.string.isRequired,
   sourceTitle: PropTypes.string.isRequired,
   data: PropTypes.object.isRequired,
-  isMarkingAsFailed: PropTypes.bool.isRequired,
+  isMarkingAsFailed: PropTypes.bool,
   shortDateFormat: PropTypes.string.isRequired,
   timeFormat: PropTypes.string.isRequired,
   onMarkAsFailedPress: PropTypes.func.isRequired,
   onModalClose: PropTypes.func.isRequired
-};
-
-HistoryDetailsModal.defaultProps = {
-  isMarkingAsFailed: false
 };
 
 export default HistoryDetailsModal;

@@ -3,14 +3,12 @@ import React from 'react';
 import { icons, sortDirections } from 'Helpers/Props';
 import SelectedMenuItem from './SelectedMenuItem';
 
-function SortMenuItem(props) {
-  const {
-    name,
-    sortKey,
-    sortDirection,
-    ...otherProps
-  } = props;
-
+function SortMenuItem({
+  name = null,
+  sortKey,
+  sortDirection,
+  ...otherProps
+}) {
   const isSelected = name === sortKey;
 
   return (
@@ -29,10 +27,6 @@ SortMenuItem.propTypes = {
   sortDirection: PropTypes.oneOf(sortDirections.all),
   children: PropTypes.oneOfType([PropTypes.string, PropTypes.element]).isRequired,
   onPress: PropTypes.func.isRequired
-};
-
-SortMenuItem.defaultProps = {
-  name: null
 };
 
 export default SortMenuItem;

@@ -2,9 +2,9 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import styles from './DragPreviewLayer.css';
 
-function DragPreviewLayer({ children, ...otherProps }) {
+function DragPreviewLayer({ children, className = styles.dragLayer, ...otherProps }) {
   return (
-    <div {...otherProps}>
+    <div className={className} {...otherProps}>
       {children}
     </div>
   );
@@ -13,10 +13,6 @@ function DragPreviewLayer({ children, ...otherProps }) {
 DragPreviewLayer.propTypes = {
   children: PropTypes.node,
   className: PropTypes.string
-};
-
-DragPreviewLayer.defaultProps = {
-  className: styles.dragLayer
 };
 
 export default DragPreviewLayer;

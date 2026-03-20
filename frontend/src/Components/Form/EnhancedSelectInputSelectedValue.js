@@ -3,13 +3,11 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import styles from './EnhancedSelectInputSelectedValue.css';
 
-function EnhancedSelectInputSelectedValue(props) {
-  const {
-    className,
-    children,
-    isDisabled
-  } = props;
-
+function EnhancedSelectInputSelectedValue({
+  className = styles.selectedValue,
+  children,
+  isDisabled = false
+}) {
   return (
     <div className={classNames(
       className,
@@ -22,14 +20,9 @@ function EnhancedSelectInputSelectedValue(props) {
 }
 
 EnhancedSelectInputSelectedValue.propTypes = {
-  className: PropTypes.string.isRequired,
+  className: PropTypes.string,
   children: PropTypes.node,
-  isDisabled: PropTypes.bool.isRequired
-};
-
-EnhancedSelectInputSelectedValue.defaultProps = {
-  className: styles.selectedValue,
-  isDisabled: false
+  isDisabled: PropTypes.bool
 };
 
 export default EnhancedSelectInputSelectedValue;

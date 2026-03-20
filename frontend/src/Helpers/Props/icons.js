@@ -28,6 +28,7 @@ import {
   faBars as fasBars,
   faBolt as fasBolt,
   faBook as fasBook,
+  faBookOpen as fasBookOpen,
   faBookmark as fasBookmark,
   faBookReader as fasBookReader,
   faBroadcastTower as fasBroadcastTower,
@@ -96,6 +97,7 @@ import {
   faStop as fasStop,
   faSync as fasSync,
   faTable as fasTable,
+  faTabletScreenButton as fasTabletScreenButton,
   faTags as fasTags,
   faTh as fasTh,
   faThList as fasThList,
@@ -124,6 +126,7 @@ export const ARROW_UP = fasArrowCircleUp;
 export const BACKUP = farFileArchive;
 export const BAN = fasBan;
 export const BOOK = fasBook;
+export const BOOK_OPEN = fasBookOpen;
 export const BUG = fasBug;
 export const CALENDAR = fasCalendarAlt;
 export const CALENDAR_O = farCalendar;
@@ -214,6 +217,7 @@ export const STAR_FULL = fasStar;
 export const SUBTRACT = fasMinus;
 export const SYSTEM = fasLaptop;
 export const TABLE = fasTable;
+export const TABLET = fasTabletScreenButton;
 export const TAGS = fasTags;
 export const TBA = fasQuestionCircle;
 export const TEST = fasVial;

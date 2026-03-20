@@ -5,12 +5,10 @@ import { kinds } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 import styles from './NoAuthor.css';
 
-function NoAuthor(props) {
-  const {
-    totalItems,
-    itemType
-  } = props;
-
+function NoAuthor({
+  totalItems,
+  itemType = 'authors'
+}) {
   if (totalItems > 0) {
     return (
       <div>
@@ -50,11 +48,7 @@ function NoAuthor(props) {
 
 NoAuthor.propTypes = {
   totalItems: PropTypes.number.isRequired,
-  itemType: PropTypes.string.isRequired
-};
-
-NoAuthor.defaultProps = {
-  itemType: 'authors'
+  itemType: PropTypes.string
 };
 
 export default NoAuthor;

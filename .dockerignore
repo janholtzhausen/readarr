@@ -1,5 +1,9 @@
-.git
-_artifacts
-_temp
-_tests
-distribution
+**
+!src/
+!Logo/
+!package.json
+!yarn.lock
+!frontend/
+!tsconfig.json
+src/**/*.Test/
+src/**/*.Tests/

@@ -9,15 +9,13 @@ import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
 import { kinds } from 'Helpers/Props';
 
-function PendingChangesModal(props) {
-  const {
-    isOpen,
-    onConfirm,
-    onCancel,
-    bindShortcut,
-    unbindShortcut
-  } = props;
-
+function PendingChangesModal({
+  isOpen,
+  onConfirm,
+  onCancel,
+  bindShortcut,
+  unbindShortcut
+}) {
   useEffect(() => {
     if (isOpen) {
       bindShortcut('enter', onConfirm);
@@ -67,10 +65,6 @@ PendingChangesModal.propTypes = {
   onCancel: PropTypes.func.isRequired,
   bindShortcut: PropTypes.func.isRequired,
   unbindShortcut: PropTypes.func.isRequired
-};
-
-PendingChangesModal.defaultProps = {
-  kind: kinds.PRIMARY
 };
 
 export default keyboardShortcuts(PendingChangesModal);

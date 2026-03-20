@@ -21,6 +21,7 @@ namespace Readarr.Api.V1.BookFiles
         public MediaInfoResource MediaInfo { get; set; }
 
         public bool QualityCutoffNotMet { get; set; }
+        public bool CanDownloadConverted { get; set; }
         public ParsedTrackInfo AudioTags { get; set; }
     }
 

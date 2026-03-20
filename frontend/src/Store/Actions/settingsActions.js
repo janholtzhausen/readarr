@@ -1,4 +1,4 @@
-import { createAction } from 'redux-actions';
+import { createAction } from 'Store/reduxActionsCompat';
 import { handleThunks } from 'Store/thunks';
 import createHandleActions from './Creators/createHandleActions';
 import customFormats from './Settings/customFormats';

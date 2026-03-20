@@ -7,11 +7,11 @@ import styles from './IconButton.css';
 
 function IconButton(props) {
   const {
-    className,
+    className = styles.button,
     iconClassName,
     name,
     kind,
-    size,
+    size = 12,
     isSpinning,
     isDisabled,
     ...otherProps
@@ -40,7 +40,7 @@ function IconButton(props) {
 
 IconButton.propTypes = {
   ...Link.propTypes,
-  className: PropTypes.string.isRequired,
+  className: PropTypes.string,
   iconClassName: PropTypes.string,
   kind: PropTypes.string,
   name: PropTypes.object.isRequired,
@@ -48,11 +48,6 @@ IconButton.propTypes = {
   title: PropTypes.string,
   isSpinning: PropTypes.bool,
   isDisabled: PropTypes.bool
-};
-
-IconButton.defaultProps = {
-  className: styles.button,
-  size: 12
 };
 
 export default IconButton;

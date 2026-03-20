@@ -1,6 +1,44 @@
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
-import LazyLoad from 'react-lazyload';
+import React, { Component, useEffect, useRef, useState } from 'react';
+
+function LazyImage({ children, placeholder, rootMargin }) {
+  const containerRef = useRef(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const node = containerRef.current;
+
+    if (!node || isVisible) {
+      return undefined;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin }
+    );
+
+    observer.observe(node);
+
+    return () => observer.disconnect();
+  }, [isVisible, rootMargin]);
+
+  return (
+    <div ref={containerRef}>
+      {isVisible ? children : placeholder}
+    </div>
+  );
+}
+
+LazyImage.propTypes = {
+  children: PropTypes.node.isRequired,
+  placeholder: PropTypes.node.isRequired,
+  rootMargin: PropTypes.string.isRequired
+};
 
 function findImage(images, coverType) {
   return images.find((image) => image.coverType === coverType);
@@ -147,18 +185,18 @@ class AuthorImage extends Component {
     }
 
     if (lazy) {
+      const placeholderImage = (
+        <img
+          className={className}
+          style={style}
+          src={placeholder}
+        />
+      );
+
       return (
-        <LazyLoad
-          height={size}
-          offset={100}
-          overflow={overflow}
-          placeholder={
-            <img
-              className={className}
-              style={style}
-              src={placeholder}
-            />
-          }
+        <LazyImage
+          placeholder={placeholderImage}
+          rootMargin="100px 0px"
         >
           <img
             className={className}
@@ -166,9 +204,11 @@ class AuthorImage extends Component {
             src={url}
             onError={this.onError}
             onLoad={this.onLoad}
+            loading="lazy"
+            decoding="async"
             rel="noreferrer"
           />
-        </LazyLoad>
+        </LazyImage>
       );
     }
 

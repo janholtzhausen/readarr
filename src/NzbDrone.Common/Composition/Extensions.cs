@@ -9,7 +9,9 @@ namespace NzbDrone.Common.Composition.Extensions
     {
         public static Rules WithNzbDroneRules(this Rules rules)
         {
+#pragma warning disable CS0618
             return rules.WithMicrosoftDependencyInjectionRules()
+#pragma warning restore CS0618
                 .WithAutoConcreteTypeResolution()
                 .WithDefaultReuse(Reuse.Singleton);
         }

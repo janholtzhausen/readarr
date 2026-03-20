@@ -341,5 +341,32 @@ namespace NzbDrone.Core.Test.MediaCoverTests
             Mocker.GetMock<IHttpClient>()
                   .Verify(c => c.Get(It.IsAny<HttpRequest>()), Times.Once());
         }
+
+        [Test]
+        public void should_use_unmonitored_edition_cover_when_no_monitored_edition_exists()
+        {
+            var unmonitoredEdition = Builder<Edition>.CreateNew()
+                .With(v => v.Id = 9)
+                .With(v => v.Images = new List<MediaCover.MediaCover>
+                {
+                    new MediaCover.MediaCover(MediaCoverTypes.Cover, "http://test.org/BookImageFallback.png")
+                })
+                .With(v => v.Monitored = false)
+                .Build();
+
+            var bookWithoutMonitoredEdition = Builder<Book>.CreateNew()
+                .With(v => v.Id = 5)
+                .With(v => v.Editions = new List<Edition> { unmonitoredEdition })
+                .Build();
+
+            Mocker.GetMock<ICoverExistsSpecification>()
+                  .Setup(v => v.AlreadyExists(It.IsAny<DateTime?>(), It.IsAny<long?>(), It.IsAny<string>()))
+                  .Returns(false);
+
+            Subject.EnsureBookCovers(bookWithoutMonitoredEdition);
+
+            Mocker.GetMock<IHttpClient>()
+                  .Verify(c => c.DownloadFile("http://test.org/BookImageFallback.png", It.IsAny<string>(), It.IsAny<string>()), Times.Once());
+        }
     }
 }

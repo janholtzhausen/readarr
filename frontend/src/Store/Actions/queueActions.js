@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import React from 'react';
-import { createAction } from 'redux-actions';
+import { createAction } from 'Store/reduxActionsCompat';
 import { batchActions } from 'redux-batched-actions';
 import Icon from 'Components/Icon';
 import { icons, sortDirections } from 'Helpers/Props';

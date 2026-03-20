@@ -1,5 +1,5 @@
 import React from 'react';
-import { createAction } from 'redux-actions';
+import { createAction } from 'Store/reduxActionsCompat';
 import Icon from 'Components/Icon';
 import { filterTypes, icons, sortDirections } from 'Helpers/Props';
 import { createThunk, handleThunks } from 'Store/thunks';

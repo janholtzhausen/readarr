@@ -1,8 +1,10 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.StaticFiles;
 using NzbDrone.Core.Books;
 using NzbDrone.Core.Datastore.Events;
 using NzbDrone.Core.DecisionEngine.Specifications;
@@ -29,7 +31,9 @@ namespace Readarr.Api.V1.BookFiles
         private readonly IMetadataTagService _metadataTagService;
         private readonly IAuthorService _authorService;
         private readonly IBookService _bookService;
+        private readonly IBookFileDownloadService _bookFileDownloadService;
         private readonly IUpgradableSpecification _upgradableSpecification;
+        private readonly IContentTypeProvider _mimeTypeProvider;
 
         public BookFileController(IBroadcastSignalRMessage signalRBroadcaster,
                                IMediaFileService mediaFileService,
@@ -37,6 +41,7 @@ namespace Readarr.Api.V1.BookFiles
                                IMetadataTagService metadataTagService,
                                IAuthorService authorService,
                                IBookService bookService,
+                               IBookFileDownloadService bookFileDownloadService,
                                IUpgradableSpecification upgradableSpecification)
             : base(signalRBroadcaster)
         {
@@ -45,19 +50,27 @@ namespace Readarr.Api.V1.BookFiles
             _metadataTagService = metadataTagService;
             _authorService = authorService;
             _bookService = bookService;
+            _bookFileDownloadService = bookFileDownloadService;
             _upgradableSpecification = upgradableSpecification;
+            _mimeTypeProvider = new FileExtensionContentTypeProvider();
         }
 
         private BookFileResource MapToResource(BookFile bookFile)
         {
+            BookFileResource resource;
+
             if (bookFile.EditionId > 0 && bookFile.Author != null && bookFile.Author.Value != null)
             {
-                return bookFile.ToResource(bookFile.Author.Value, _upgradableSpecification);
+                resource = bookFile.ToResource(bookFile.Author.Value, _upgradableSpecification);
             }
             else
             {
-                return bookFile.ToResource();
+                resource = bookFile.ToResource();
             }
+
+            resource.CanDownloadConverted = _bookFileDownloadService.CanConvertToFormat(bookFile, "epub");
+
+            return resource;
         }
 
         protected override BookFileResource GetResourceById(int id)
@@ -83,9 +96,7 @@ namespace Readarr.Api.V1.BookFiles
 
             if (authorId.HasValue && !bookIds.Any())
             {
-                var author = _authorService.GetAuthor(authorId.Value);
-
-                return _mediaFileService.GetFilesByAuthor(authorId.Value).ConvertAll(f => f.ToResource(author, _upgradableSpecification));
+                return _mediaFileService.GetFilesByAuthor(authorId.Value).ConvertAll(f => MapToResource(f));
             }
 
             if (bookIds.Any())
@@ -94,8 +105,7 @@ namespace Readarr.Api.V1.BookFiles
                 foreach (var bookId in bookIds)
                 {
                     var book = _bookService.GetBook(bookId);
-                    var bookAuthor = _authorService.GetAuthor(book.AuthorId);
-                    result.AddRange(_mediaFileService.GetFilesByBook(book.Id).ConvertAll(f => f.ToResource(bookAuthor, _upgradableSpecification)));
+                    result.AddRange(_mediaFileService.GetFilesByBook(book.Id).ConvertAll(f => MapToResource(f)));
                 }
 
                 return result;
@@ -108,8 +118,30 @@ namespace Readarr.Api.V1.BookFiles
             }
         }
 
+        [HttpGet("{id:int}/download")]
+        public IActionResult DownloadBookFile(int id, [FromQuery] string format)
+        {
+            try
+            {
+                var download = _bookFileDownloadService.PrepareDownload(id, format);
+                return PhysicalFile(download.Path, GetContentType(download.Path), download.FileName);
+            }
+            catch (FileNotFoundException ex)
+            {
+                throw new NzbDroneClientException(HttpStatusCode.NotFound, ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                throw new BadRequestException(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                throw new BadRequestException(ex.Message);
+            }
+        }
+
         [RestPutById]
-        public ActionResult<BookFileResource> SetQuality(BookFileResource bookFileResource)
+        public ActionResult<BookFileResource> SetQuality([FromBody] BookFileResource bookFileResource)
         {
             var bookFile = _mediaFileService.Get(bookFileResource.Id);
             bookFile.Quality = bookFileResource.Quality;
@@ -185,6 +217,16 @@ namespace Readarr.Api.V1.BookFiles
         public void Handle(BookFileDeletedEvent message)
         {
             BroadcastResourceChange(ModelAction.Deleted, MapToResource(message.BookFile));
+        }
+
+        private string GetContentType(string filePath)
+        {
+            if (!_mimeTypeProvider.TryGetContentType(filePath, out var contentType))
+            {
+                contentType = "application/octet-stream";
+            }
+
+            return contentType;
         }
     }
 }

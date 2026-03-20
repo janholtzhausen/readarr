@@ -4,18 +4,26 @@ import React from 'react';
 import { sizes } from 'Helpers/Props';
 import styles from './FormLabel.css';
 
-function FormLabel(props) {
-  const {
-    children,
-    className,
-    errorClassName,
-    size,
-    name,
-    hasError,
-    isAdvanced,
-    ...otherProps
-  } = props;
+interface FormLabelProps extends React.LabelHTMLAttributes<HTMLLabelElement> {
+  children: React.ReactNode;
+  className?: string;
+  errorClassName?: string;
+  size?: string;
+  name?: string;
+  hasError?: boolean;
+  isAdvanced?: boolean;
+}
 
+function FormLabel({
+  children,
+  className = styles.label,
+  errorClassName = styles.hasError,
+  size = sizes.LARGE,
+  name,
+  hasError,
+  isAdvanced = false,
+  ...otherProps
+}: FormLabelProps) {
   return (
     <label
       {...otherProps}
@@ -40,13 +48,6 @@ FormLabel.propTypes = {
   name: PropTypes.string,
   hasError: PropTypes.bool,
   isAdvanced: PropTypes.bool
-};
-
-FormLabel.defaultProps = {
-  className: styles.label,
-  errorClassName: styles.hasError,
-  isAdvanced: false,
-  size: sizes.LARGE
 };
 
 export default FormLabel;

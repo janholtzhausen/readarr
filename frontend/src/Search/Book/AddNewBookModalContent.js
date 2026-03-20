@@ -1,6 +1,5 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import TextTruncate from 'react-text-truncate';
 import BookCover from 'Book/BookCover';
 import CheckInput from 'Components/Form/CheckInput';
 import SpinnerButton from 'Components/Link/SpinnerButton';
@@ -8,6 +7,7 @@ import ModalBody from 'Components/Modal/ModalBody';
 import ModalContent from 'Components/Modal/ModalContent';
 import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
+import ClampText from 'Components/Text/ClampText';
 import { kinds } from 'Helpers/Props';
 import stripHtml from 'Utilities/String/stripHtml';
 import translate from 'Utilities/String/translate';
@@ -100,8 +100,7 @@ class AddNewBookModalContent extends Component {
               {
                 overview ?
                   <div className={styles.overview}>
-                    <TextTruncate
-                      truncateText="…"
+                    <ClampText
                       line={8}
                       text={stripHtml(overview)}
                     />

@@ -1,62 +1,96 @@
-# bookshelf
+# Readarr
 
-This is a revival of [Readarr](https://github.com/Readarr/Readarr). The images
-published are configured to use working Goodreads or Hardcover metadata out of
-the box.
+This repository is a maintained derivative of
+[pennydreadful/bookshelf](https://github.com/pennydreadful/bookshelf), which is
+itself derived from the original
+[Readarr](https://github.com/Readarr/Readarr) project.
 
-Bookshelf is an ebook and audiobook collection manager for Usenet and BitTorrent
-users. It can monitor multiple RSS feeds for new books from your favorite
-authors and will grab, sort, and rename them. Note that only one type of a
-given book is supported. If you want both an audiobook and ebook of a given
-book you will need multiple instances.
+The codebase in this repo has been updated substantially from that bookshelf
+baseline, including frontend/runtime modernization, container/runtime
+improvements, book file download improvements, and media cover
+recovery/backfill behavior.
 
-## Getting Started
+## Lineage
 
-The container listens on port 8787 and expects a volume mounted at `/config`.
+- [Readarr](https://github.com/Readarr/Readarr)
+- [pennydreadful/bookshelf](https://github.com/pennydreadful/bookshelf)
+- this maintained fork
 
-    docker run -p 8787:8787 -v ~/.config/bookshelf:/config ghcr.io/pennydreadful/bookshelf:hardcover
+## Status
 
-The `softcover` tags use [Goodreads](https://www.goodreads.com) as the metadata
-provider. The quality of this metadata is generally poor and contains a lot of
-slop. However, it is backward-compatible with existing Readarr databases and
-functionality like Goodreads list imports should continue to work normally.
+Current highlights in this maintained fork:
 
-The `hardcover` tags use [Hardcover](https://hardcover.app/home) as a metadata
-provider. This metadata is higher quality but isn't backward-compatible; if
-you're already running Readarr you'll need to redeploy this from scratch.
-Goodreads list imports haven't been tested and likely don't work.
+- React frontend modernized onto the current React 19 line.
+- Router/history/frontend dependency stack updated from older legacy packages.
+- Multiple outdated frontend helper libraries removed or replaced.
+- Book detail/download UI improved.
+- EPUB and AZW3 download/export paths added and validated.
+- Automatic missing cover recovery added through housekeeping backfill.
+- Author and book image rendering regressions fixed.
+- Container build/runtime updated around the current .NET 10 toolchain used in
+  this workspace.
 
-## Support
+## Running
 
-This project won't use Discord for support. If you have a problem please file
-an issue or start a discussion.
+The application listens on port `8787` and expects a writable config volume at
+`/config`.
 
-## Contributors & Developers
+## What Changed In This Fork
 
-Help is very welcome. Priority is on fixing quality of life issues
+This maintained fork currently includes work in these areas:
 
-- [ ] Monitor series.
-- [ ] Support ebook and audio files in the same root.
+- Frontend dependency modernization to newer maintained packages.
+- React 19 compatibility work, including removal of old `findDOMNode` usage and
+  function-component `defaultProps` cleanup.
+- Router modernization with compatibility bridging for existing screens.
+- jQuery/XHR request path replacement with `fetch`/`AbortController`.
+- Local replacements for stale frontend utilities such as document title,
+  truncation, and lazy image helpers.
+- Improved toolbar actions and book file download UX.
+- Backend cover healing to reduce persistent missing author/book artwork.
 
-Already done
+## Upstream Credit
 
-- [x] Native support for MyAnonaMouse without Prowlarr.
-- [x] Hardcover list import.
-- [x] Improved matching.
-- [x] Metadata is no longer cached locally.
-- [x] Removed servarr analytics spyware.
-- [x] Supports selfhosted metadata (UI or `METADATA_URL` env var).
+Full credit is due first to
+[pennydreadful/bookshelf](https://github.com/pennydreadful/bookshelf) as the
+immediate source this work started from, and also to the original
+[Readarr](https://github.com/Readarr/Readarr) authors and maintainers whose
+project bookshelf itself derives from.
 
-## Sponsors
+This repository remains a derivative work of:
 
-If you ever donated to [this](https://opencollective.com/readarr) project you
-should request a refund. Those people don't deserve your money.
+- [pennydreadful/bookshelf](https://github.com/pennydreadful/bookshelf)
+- [Readarr](https://github.com/Readarr/Readarr)
+- related Servarr ecosystem code where still applicable
 
-### License
+The original project license terms remain in effect. See
+[LICENSE.md](./LICENSE.md).
 
-The is a derivative work of the [Readarr](https://github.com/Readarr/Readarr)
-and [Prowlarr](https://github.com/Prowlarr/Prowlarr) projects which are both
-licensed [GPLv3](http://www.gnu.org/licenses/gpl.html). This project is
-therefore also licensed under the terms of GPLv3.
+## Metadata/Image Source Credit
 
-Copyright 2025-2026
+This fork has used metadata and image source integrations originating from the
+existing bookshelf/Readarr codebase and related source providers, including
+Goodreads-derived image URLs that are still referenced by parts of the current
+metadata pipeline.
+
+Credit is due to:
+
+- [Goodreads](https://www.goodreads.com/) as an original metadata/image source
+  used by existing Readarr-compatible metadata flows
+- [pennydreadful/bookshelf](https://github.com/pennydreadful/bookshelf) for the
+  actual source fork this repository was derived from
+- the upstream Readarr work that bookshelf and this repository both build on
+
+This repository does not replace or relicense third-party source material.
+Applicable upstream/source licenses and terms remain with their original
+owners/providers.
+
+## License
+
+This repository remains under GPLv3 in line with the original Readarr project.
+See [LICENSE.md](./LICENSE.md).
+
+## Contributor Attribution
+
+This fork is being maintained by `janholtzhausen`, while preserving explicit
+credit to original Readarr and source-provider work above.

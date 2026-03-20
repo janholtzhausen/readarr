@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { createSelector } from 'reselect';
 import AppState from 'App/State/AppState';
 import * as commandNames from 'Commands/commandNames';
@@ -14,6 +14,7 @@ import PageContent from 'Components/Page/PageContent';
 import PageContentBody from 'Components/Page/PageContentBody';
 import { icons, kinds } from 'Helpers/Props';
 import { executeCommand } from 'Store/Actions/commandActions';
+import useAppDispatch from 'Store/Hooks/useAppDispatch';
 import { fetchGeneralSettings } from 'Store/Actions/settingsActions';
 import { fetchUpdates } from 'Store/Actions/systemActions';
 import createCommandExecutingSelector from 'Store/Selectors/createCommandExecutingSelector';
@@ -71,7 +72,7 @@ function Updates() {
     updateMechanism,
   } = useSelector(createUpdatesSelector());
 
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const [isMajorUpdateModalOpen, setIsMajorUpdateModalOpen] = useState(false);
   const hasError = !!(updatesError || generalSettingsError);
   const hasUpdates = isPopulated && !hasError && items.length > 0;

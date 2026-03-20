@@ -4,7 +4,7 @@ import styles from './VirtualTableRowCell.css';
 
 function VirtualTableRowCell(props) {
   const {
-    className,
+    className = styles.cell,
     children
   } = props;
 
@@ -18,12 +18,8 @@ function VirtualTableRowCell(props) {
 }
 
 VirtualTableRowCell.propTypes = {
-  className: PropTypes.string.isRequired,
+  className: PropTypes.string,
   children: PropTypes.oneOfType([PropTypes.string, PropTypes.node])
-};
-
-VirtualTableRowCell.defaultProps = {
-  className: styles.cell
 };
 
 export default VirtualTableRowCell;
