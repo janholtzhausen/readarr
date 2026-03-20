@@ -1,0 +1,25 @@
+.TrackActionsCell {
+  composes: cell from '~Components/Table/Cells/TableRowCell.css';
+
+  width: 240px;
+  white-space: nowrap;
+}
+
+.downloadLinks {
+  display: inline-flex;
+  gap: 8px;
+  margin-right: 8px;
+}
+
+.downloadLink {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+  color: var(--linkColor);
+  font-size: 11px;
+  text-decoration: underline;
+}
+
+.downloadLinkIcon {
+  font-size: 12px;
+}

@@ -1,0 +1,45 @@
+.toolbarButton {
+  composes: link from '~Components/Link/Link.css';
+
+  display: inline-block;
+  padding-top: 4px;
+  width: $toolbarButtonWidth;
+  color: inherit;
+  text-align: center;
+
+  &:hover {
+    color: var(--toobarButtonHoverColor);
+    text-decoration: none;
+  }
+
+  &.isDisabled {
+    color: var(--disabledColor);
+  }
+
+  &:global(.Link-to) {
+    color: inherit;
+
+    &:hover {
+      color: var(--toobarButtonHoverColor);
+      text-decoration: none;
+    }
+  }
+}
+
+.isDisabled {
+  color: var(--disabledColor);
+}
+
+.labelContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 24px;
+}
+
+.label {
+  padding: 0 3px;
+  color: var(--toolbarLabelColor);
+  font-size: $extraSmallFontSize;
+  line-height: calc($extraSmallFontSize + 1px);
+}

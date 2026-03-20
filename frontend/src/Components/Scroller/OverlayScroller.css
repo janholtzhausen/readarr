@@ -1,0 +1,45 @@
+.scroller {
+  @add-mixin scrollbar;
+  @add-mixin scrollbarTrack;
+  @add-mixin scrollbarThumb;
+  -webkit-overflow-scrolling: touch;
+}
+
+.track {
+  /* Placeholder */
+}
+
+.thumb {
+  /* Kept for compatibility with callers that still pass a track class. */
+}
+
+.none {
+  overflow-x: hidden;
+  overflow-y: hidden;
+}
+
+.vertical {
+  overflow-x: hidden;
+  overflow-y: scroll;
+
+  &.autoScroll {
+    overflow-y: auto;
+  }
+}
+
+.horizontal {
+  overflow-x: scroll;
+  overflow-y: hidden;
+
+  &.autoScroll {
+    overflow-x: auto;
+  }
+}
+
+.both {
+  overflow: scroll;
+
+  &.autoScroll {
+    overflow: auto;
+  }
+}

@@ -1,0 +1,9 @@
+**
+!src/
+!Logo/
+!package.json
+!yarn.lock
+!frontend/
+!tsconfig.json
+src/**/*.Test/
+src/**/*.Tests/
