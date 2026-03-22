@@ -58,6 +58,16 @@ function getSelectValues(selectOptions) {
   }, []);
 }
 
+function getIsMultiSelect(name, value, type, selectOptionsProviderAction) {
+  if (Array.isArray(value)) {
+    return true;
+  }
+
+  return type === 'select' &&
+    name === 'categories' &&
+    selectOptionsProviderAction === 'newznabCategories';
+}
+
 function ProviderFieldFormGroup(props) {
   const {
     advancedSettings = false,
@@ -107,6 +117,7 @@ function ProviderFieldFormGroup(props) {
         warnings={warnings}
         pending={pending}
         includeFiles={type === 'filePath' ? true : undefined}
+        isMultiSelect={getIsMultiSelect(name, value, type, props.selectOptionsProviderAction)}
         onChange={onChange}
         {...otherProps}
       />

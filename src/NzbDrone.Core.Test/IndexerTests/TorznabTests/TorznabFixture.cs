@@ -104,6 +104,26 @@ namespace NzbDrone.Core.Test.IndexerTests.TorznabTests
         }
 
         [Test]
+        public async Task should_use_search_for_recent_feed_when_book_search_lacks_author_and_title()
+        {
+            _caps.SupportedSearchParameters = new[] { "q" };
+            _caps.SupportedBookSearchParameters = new[] { "q" };
+
+            var recentFeed = ReadAllText(@"Files/Indexers/Torznab/torznab_tpb.xml");
+
+            Mocker.GetMock<IHttpClient>()
+                .Setup(o => o.ExecuteAsync(It.Is<HttpRequest>(v => v.Method == HttpMethod.Get && v.Url.FullUri.Contains("t=search") && !v.Url.FullUri.Contains("t=book"))))
+                .Returns<HttpRequest>(r => Task.FromResult(new HttpResponse(r, new HttpHeader(), recentFeed)));
+
+            var releases = await Subject.FetchRecent();
+
+            releases.Should().HaveCount(5);
+
+            Mocker.GetMock<IHttpClient>()
+                .Verify(o => o.ExecuteAsync(It.Is<HttpRequest>(v => v.Method == HttpMethod.Get && v.Url.FullUri.Contains("t=search") && !v.Url.FullUri.Contains("t=book"))), Times.Once());
+        }
+
+        [Test]
         public void should_use_best_pagesize_reported_by_caps()
         {
             _caps.MaxPageSize = 30;
@@ -119,6 +139,28 @@ namespace NzbDrone.Core.Test.IndexerTests.TorznabTests
             _caps.DefaultPageSize = 25;
 
             Subject.PageSize.Should().Be(100);
+        }
+
+        [Test]
+        public void torznab_settings_should_default_to_torrent_book_categories()
+        {
+            var settings = new TorznabSettings();
+
+            settings.Categories.Should().BeEquivalentTo(new[] { 100601, 100102 });
+        }
+
+        [Test]
+        public async Task empty_recent_feed_should_not_fail_torznab_test_connection()
+        {
+            const string emptyRecentFeed = "<rss version=\"2.0\"><channel><title>empty</title></channel></rss>";
+
+            Mocker.GetMock<IHttpClient>()
+                .Setup(o => o.ExecuteAsync(It.Is<HttpRequest>(v => v.Method == HttpMethod.Get)))
+                .Returns<HttpRequest>(r => Task.FromResult(new HttpResponse(r, new HttpHeader(), emptyRecentFeed)));
+
+            var result = await Subject.TestConnection();
+
+            result.Should().BeNull();
         }
 
         [TestCase("http://localhost:9117/", "/api")]

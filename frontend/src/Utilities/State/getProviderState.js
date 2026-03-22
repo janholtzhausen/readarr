@@ -1,5 +1,54 @@
 import _ from 'lodash';
 import getSectionState from 'Utilities/State/getSectionState';
+import normalizeIndexerUrl from 'Settings/Indexers/Indexers/normalizeIndexerUrl';
+
+function normalizeIndexerProviderState(providerState) {
+  const implementation = providerState.implementation;
+
+  if (!providerState.fields || typeof implementation !== 'string') {
+    return providerState;
+  }
+
+  const baseUrlField = providerState.fields.find((field) => field.name === 'baseUrl');
+
+  if (!baseUrlField) {
+    return providerState;
+  }
+
+  const normalizedUrl = normalizeIndexerUrl(implementation, baseUrlField.value);
+
+  if (!normalizedUrl) {
+    return providerState;
+  }
+
+  return {
+    ...providerState,
+    fields: providerState.fields.map((field) => {
+      if (field.name === 'baseUrl') {
+        return {
+          ...field,
+          value: normalizedUrl.baseUrl
+        };
+      }
+
+      if (field.name === 'apiPath' && normalizedUrl.apiPath) {
+        return {
+          ...field,
+          value: normalizedUrl.apiPath
+        };
+      }
+
+      if (field.name === 'apiKey' && normalizedUrl.apiKey) {
+        return {
+          ...field,
+          value: normalizedUrl.apiKey
+        };
+      }
+
+      return field;
+    })
+  };
+}
 
 function getProviderState(payload, getState, section, keyValueOnly=true) {
   const {
@@ -39,9 +88,13 @@ function getProviderState(payload, getState, section, keyValueOnly=true) {
     }, []);
   }
 
-  const result = Object.assign({}, item, pendingChanges);
+  let result = Object.assign({}, item, pendingChanges);
 
   delete result.presets;
+
+  if (section === 'settings.indexers') {
+    result = normalizeIndexerProviderState(result);
+  }
 
   return result;
 }

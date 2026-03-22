@@ -46,6 +46,7 @@ namespace NzbDrone.Core.Indexers.Torznab
 
         public TorznabSettings()
         {
+            Categories = new[] { 100601, 100102 };
             MinimumSeeders = IndexerDefaults.MINIMUM_SEEDERS;
         }
 

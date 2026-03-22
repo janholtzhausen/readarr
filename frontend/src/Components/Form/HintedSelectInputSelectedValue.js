@@ -13,7 +13,9 @@ function HintedSelectInputSelectedValue({
   includeHint = true,
   ...otherProps
 }) {
-  const valuesMap = isMultiSelect && _.keyBy(values, 'key');
+  const selectValues = values ?? [];
+  const selectedValues = isMultiSelect ? (Array.isArray(value) ? value : []) : value;
+  const valuesMap = isMultiSelect ? _.keyBy(selectValues, 'key') : null;
 
   return (
     <EnhancedSelectInputSelectedValue
@@ -23,7 +25,7 @@ function HintedSelectInputSelectedValue({
       <div className={styles.valueText}>
         {
           isMultiSelect ?
-            value.map((key, index) => {
+            selectedValues.map((key) => {
               const v = valuesMap[key];
               return (
                 <Label key={key}>
@@ -35,7 +37,7 @@ function HintedSelectInputSelectedValue({
         }
 
         {
-          isMultiSelect ? null : value
+          isMultiSelect ? null : selectedValues
         }
       </div>
 
@@ -51,8 +53,8 @@ function HintedSelectInputSelectedValue({
 }
 
 HintedSelectInputSelectedValue.propTypes = {
-  value: PropTypes.oneOfType([PropTypes.number, PropTypes.string, PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, PropTypes.number]))]).isRequired,
-  values: PropTypes.arrayOf(PropTypes.object).isRequired,
+  value: PropTypes.oneOfType([PropTypes.number, PropTypes.string, PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, PropTypes.number]))]),
+  values: PropTypes.arrayOf(PropTypes.object),
   hint: PropTypes.string,
   isMultiSelect: PropTypes.bool,
   includeHint: PropTypes.bool

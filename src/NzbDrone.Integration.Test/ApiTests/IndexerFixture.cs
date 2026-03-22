@@ -34,6 +34,11 @@ namespace NzbDrone.Integration.Test.ApiTests
             return schema;
         }
 
+        private IndexerResource GetTorznabSchema()
+        {
+            return Indexers.Schema().First(v => v.Implementation == "Torznab");
+        }
+
         private Field GetCategoriesField(IndexerResource resource)
         {
             var field = resource.Fields.First(v => v.Name == "categories");
@@ -47,6 +52,16 @@ namespace NzbDrone.Integration.Test.ApiTests
             var schema = GetNewznabSchemav1();
 
             schema.Presets.Any(x => x.SupportsRss).Should().BeTrue();
+        }
+
+        [Test]
+        public void torznab_categories_should_default_to_torrent_book_categories()
+        {
+            var schema = GetTorznabSchema();
+            var categoriesField = GetCategoriesField(schema);
+
+            categoriesField.Value.Should().BeOfType<JArray>();
+            categoriesField.Value.As<JArray>().ToObject<int[]>().Should().BeEquivalentTo(new[] { 100601, 100102 });
         }
 
         [Test]

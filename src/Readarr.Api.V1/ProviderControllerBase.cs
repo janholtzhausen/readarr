@@ -71,11 +71,11 @@ namespace Readarr.Api.V1
         [Produces("application/json")]
         public ActionResult<TProviderResource> CreateProvider([FromBody] TProviderResource providerResource, [FromQuery] bool forceSave = false)
         {
-            var providerDefinition = GetDefinition(providerResource, true, !forceSave, false);
+            var providerDefinition = GetDefinition(providerResource, true, false, false);
 
             if (providerDefinition.Enable)
             {
-                Test(providerDefinition, !forceSave);
+                Test(providerDefinition, false);
             }
 
             providerDefinition = _providerFactory.Create(providerDefinition);
@@ -88,12 +88,12 @@ namespace Readarr.Api.V1
         [Produces("application/json")]
         public ActionResult<TProviderResource> UpdateProvider([FromBody] TProviderResource providerResource, [FromQuery] bool forceSave = false)
         {
-            var providerDefinition = GetDefinition(providerResource, true, !forceSave, false);
+            var providerDefinition = GetDefinition(providerResource, true, false, false);
 
             // Only test existing definitions if it is enabled and forceSave isn't set.
             if (providerDefinition.Enable && !forceSave)
             {
-                Test(providerDefinition, true);
+                Test(providerDefinition, false);
             }
 
             _providerFactory.Update(providerDefinition);

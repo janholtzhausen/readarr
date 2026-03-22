@@ -42,6 +42,20 @@ namespace NzbDrone.Core.Indexers.Torznab
             return new TorznabRssParser();
         }
 
+        public override async Task<ValidationFailure> TestConnection()
+        {
+            var result = await base.TestConnection();
+
+            if (result is NzbDroneValidationFailure warning &&
+                warning.IsWarning &&
+                warning.ErrorMessage.Contains("no results in the configured categories", StringComparison.InvariantCultureIgnoreCase))
+            {
+                return null;
+            }
+
+            return result;
+        }
+
         private IndexerDefinition GetDefinition(string name, TorznabSettings settings)
         {
             return new IndexerDefinition

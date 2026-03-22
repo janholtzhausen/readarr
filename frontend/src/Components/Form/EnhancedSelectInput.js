@@ -78,6 +78,26 @@ function isSelectedItem(index, value, values) {
   return values[index].key === value;
 }
 
+function normalizeMultiSelectValue(value) {
+  if (Array.isArray(value)) {
+    return value;
+  }
+
+  if (value == null || value === '') {
+    return [];
+  }
+
+  if (typeof value === 'string') {
+    return value
+      .split(',')
+      .map((item) => item.trim())
+      .filter(Boolean)
+      .map((item) => (/^\d+$/.test(item) ? Number(item) : item));
+  }
+
+  return [value];
+}
+
 function EnhancedSelectInput(props) {
   const {
     className = styles.enhancedSelect,
@@ -88,6 +108,7 @@ function EnhancedSelectInput(props) {
     isDisabled = false,
     isFetching,
     isEditable,
+    isMultiSelect: isMultiSelectProp,
     hasError,
     hasWarning,
     valueOptions,
@@ -98,11 +119,15 @@ function EnhancedSelectInput(props) {
     onOpen
   } = props;
 
-  const [selectedIndex, setSelectedIndex] = useState(getSelectedIndex(value, values));
+  const selectValues = values ?? [];
+  const normalizedValue = value ?? '';
+  const isMultiSelect = isMultiSelectProp ?? Array.isArray(value);
+  const multiSelectValue = isMultiSelect ? normalizeMultiSelectValue(value) : [];
+  const [selectedIndex, setSelectedIndex] = useState(getSelectedIndex(normalizedValue, selectValues));
   const [isOpen, setIsOpen] = useState(false);
   const isMobile = useMemo(() => isMobileUtil(), []);
-  const isMultiSelect = Array.isArray(value);
-  const selectedOption = getSelectedOption(selectedIndex, values);
+  const selectedOption = getSelectedOption(selectedIndex, selectValues);
+  const selectedOptionProps = selectedOption ? _.omit(selectedOption, 'value') : undefined;
 
   const { refs, context, floatingStyles } = useFloating({
     middleware: [
@@ -133,33 +158,33 @@ function EnhancedSelectInput(props) {
   const { getReferenceProps, getFloatingProps } = useInteractions([click, dismiss]);
 
   const selectedValue = useMemo(() => {
-    if (values.length) {
-      return value;
+    if (selectValues.length) {
+      return isMultiSelect ? multiSelectValue : normalizedValue;
     }
 
     if (isMultiSelect) {
       return [];
-    } else if (typeof value === 'number') {
+    } else if (typeof normalizedValue === 'number') {
       return 0;
     }
 
     return '';
-  }, [value, values, isMultiSelect]);
+  }, [isMultiSelect, multiSelectValue, normalizedValue, selectValues]);
 
   const onPress = useCallback(() => {
     setIsOpen((open) => !open);
   }, []);
 
   const onSelect = useCallback((newValue) => {
-    const additionalProperties = values.find((v) => v.key === newValue)?.additionalProperties;
+    const additionalProperties = selectValues.find((v) => v.key === newValue)?.additionalProperties;
 
-    if (Array.isArray(value)) {
-      const index = value.indexOf(newValue);
+    if (isMultiSelect) {
+      const index = multiSelectValue.indexOf(newValue);
 
       if (index === -1) {
-        const arrayValue = values
+        const arrayValue = selectValues
           .map((v) => v.key)
-          .filter((v) => v === newValue || value.includes(v));
+          .filter((v) => v === newValue || multiSelectValue.includes(v));
 
         onChange({
           name,
@@ -167,7 +192,7 @@ function EnhancedSelectInput(props) {
           additionalProperties
         });
       } else {
-        const arrayValue = [...value];
+        const arrayValue = [...multiSelectValue];
         arrayValue.splice(index, 1);
 
         onChange({
@@ -184,17 +209,17 @@ function EnhancedSelectInput(props) {
         additionalProperties
       });
     }
-  }, [name, value, values, onChange]);
+  }, [isMultiSelect, multiSelectValue, name, selectValues, onChange]);
 
   const onBlur = useCallback(() => {
     if (!isEditable) {
-      const origIndex = getSelectedIndex(value, values);
+      const origIndex = getSelectedIndex(normalizedValue, selectValues);
 
       if (origIndex !== selectedIndex) {
         setSelectedIndex(origIndex);
       }
     }
-  }, [value, values, isEditable, selectedIndex]);
+  }, [normalizedValue, selectValues, isEditable, selectedIndex]);
 
   const onFocus = useCallback(() => {
     if (isOpen) {
@@ -208,6 +233,10 @@ function EnhancedSelectInput(props) {
     let nextSelectedIndex = null;
 
     if (!isOpen) {
+      if (!selectValues.length) {
+        return;
+      }
+
       if (isArrowKey(keyCode)) {
         event.preventDefault();
         nextIsOpen = true;
@@ -216,12 +245,12 @@ function EnhancedSelectInput(props) {
       if (
         selectedIndex == null ||
         selectedIndex === -1 ||
-        getSelectedOption(selectedIndex, values).isDisabled
+        getSelectedOption(selectedIndex, selectValues)?.isDisabled
       ) {
         if (keyCode === keyCodes.UP_ARROW) {
-          nextSelectedIndex = previousIndex(0, values);
+          nextSelectedIndex = previousIndex(0, selectValues);
         } else if (keyCode === keyCodes.DOWN_ARROW) {
-          nextSelectedIndex = nextIndex(values.length - 1, values);
+          nextSelectedIndex = nextIndex(selectValues.length - 1, selectValues);
         }
       }
 
@@ -238,30 +267,30 @@ function EnhancedSelectInput(props) {
 
     if (keyCode === keyCodes.UP_ARROW) {
       event.preventDefault();
-      nextSelectedIndex = previousIndex(selectedIndex, values);
+      nextSelectedIndex = previousIndex(selectedIndex, selectValues);
     }
 
     if (keyCode === keyCodes.DOWN_ARROW) {
       event.preventDefault();
-      nextSelectedIndex = nextIndex(selectedIndex, values);
+      nextSelectedIndex = nextIndex(selectedIndex, selectValues);
     }
 
-    if (keyCode === keyCodes.ENTER) {
+    if (keyCode === keyCodes.ENTER && selectedIndex != null && selectedIndex !== -1 && selectValues[selectedIndex]) {
       event.preventDefault();
       nextIsOpen = false;
-      onSelect(values[selectedIndex].key);
+      onSelect(selectValues[selectedIndex].key);
     }
 
-    if (keyCode === keyCodes.TAB) {
+    if (keyCode === keyCodes.TAB && selectedIndex != null && selectedIndex !== -1 && selectValues[selectedIndex]) {
       nextIsOpen = false;
-      onSelect(values[selectedIndex].key);
+      onSelect(selectValues[selectedIndex].key);
     }
 
     if (keyCode === keyCodes.ESCAPE) {
       event.preventDefault();
       event.stopPropagation();
       nextIsOpen = false;
-      nextSelectedIndex = getSelectedIndex(value, values);
+      nextSelectedIndex = getSelectedIndex(normalizedValue, selectValues);
     }
 
     if (nextIsOpen !== null) {
@@ -271,7 +300,7 @@ function EnhancedSelectInput(props) {
     if (nextSelectedIndex !== null) {
       setSelectedIndex(nextSelectedIndex);
     }
-  }, [value, isOpen, selectedIndex, values, onSelect]);
+  }, [normalizedValue, isOpen, selectedIndex, selectValues, onSelect]);
 
   const onOptionsModalClose = useCallback(() => {
     setIsOpen(false);
@@ -282,10 +311,10 @@ function EnhancedSelectInput(props) {
   }, [onChange]);
 
   useEffect(() => {
-    if (!Array.isArray(value)) {
-      setSelectedIndex(getSelectedIndex(value, values));
+    if (!Array.isArray(normalizedValue)) {
+      setSelectedIndex(getSelectedIndex(normalizedValue, selectValues));
     }
-  }, [value, values]);
+  }, [normalizedValue, selectValues]);
 
   useEffect(() => {
     if (isOpen) {
@@ -339,12 +368,12 @@ function EnhancedSelectInput(props) {
               onPress={onPress}
             >
               <SelectedValueComponent
-                values={values}
+                values={selectValues}
+                value={selectedValue}
                 {...selectedValueOptions}
-                selectedValue={selectedValue}
                 isDisabled={isDisabled}
                 isMultiSelect={isMultiSelect}
-                {...selectedOption}
+                {...selectedOptionProps}
               >
                 {selectedOption ? selectedOption.value : selectedValue}
               </SelectedValueComponent>
@@ -370,18 +399,18 @@ function EnhancedSelectInput(props) {
         !isMobile && isOpen ?
           <FloatingPortal id="portal-root">
             <Scroller
-              ref={refs.setFloating}
+              registerScroller={refs.setFloating}
               className={classNames(styles.options, styles.optionsContainer)}
               style={floatingStyles}
               {...getFloatingProps()}
             >
-              {values.map((v, index) => {
+              {selectValues.map((v, index) => {
                 const hasParent = v.parentKey !== undefined;
                 const depth = hasParent ? 1 : 0;
                 const parentSelected =
                   v.parentKey !== undefined &&
-                  Array.isArray(value) &&
-                  value.includes(v.parentKey);
+                  isMultiSelect &&
+                  multiSelectValue.includes(v.parentKey);
 
                 const { key, ...other } = v;
 
@@ -390,7 +419,7 @@ function EnhancedSelectInput(props) {
                     key={v.key}
                     id={v.key}
                     depth={depth}
-                    isSelected={isSelectedItem(index, value, values)}
+                    isSelected={isSelectedItem(index, isMultiSelect ? multiSelectValue : normalizedValue, selectValues)}
                     isDisabled={parentSelected}
                     isMultiSelect={isMultiSelect}
                     {...valueOptions}
@@ -430,13 +459,13 @@ function EnhancedSelectInput(props) {
                   </Link>
                 </div>
 
-                {values.map((v, index) => {
+                {selectValues.map((v, index) => {
                   const hasParent = v.parentKey !== undefined;
                   const depth = hasParent ? 1 : 0;
                   const parentSelected =
                     v.parentKey !== undefined &&
                     isMultiSelect &&
-                    value.includes(v.parentKey);
+                    multiSelectValue.includes(v.parentKey);
 
                   const { key, ...other } = v;
 
@@ -445,7 +474,7 @@ function EnhancedSelectInput(props) {
                       key={key}
                       id={key}
                       depth={depth}
-                      isSelected={isSelectedItem(index, value, values)}
+                      isSelected={isSelectedItem(index, isMultiSelect ? multiSelectValue : normalizedValue, selectValues)}
                       isMultiSelect={isMultiSelect}
                       isDisabled={parentSelected}
                       {...valueOptions}
@@ -470,11 +499,12 @@ EnhancedSelectInput.propTypes = {
   className: PropTypes.string,
   disabledClassName: PropTypes.string,
   name: PropTypes.string.isRequired,
-  value: PropTypes.oneOfType([PropTypes.any, PropTypes.array]).isRequired,
-  values: PropTypes.arrayOf(PropTypes.object).isRequired,
+  value: PropTypes.oneOfType([PropTypes.any, PropTypes.array]),
+  values: PropTypes.arrayOf(PropTypes.object),
   isDisabled: PropTypes.bool,
   isFetching: PropTypes.bool,
   isEditable: PropTypes.bool,
+  isMultiSelect: PropTypes.bool,
   hasError: PropTypes.bool,
   hasWarning: PropTypes.bool,
   valueOptions: PropTypes.object,

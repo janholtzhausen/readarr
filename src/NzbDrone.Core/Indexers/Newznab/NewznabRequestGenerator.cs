@@ -41,7 +41,7 @@ namespace NzbDrone.Core.Indexers.Newznab
 
             var capabilities = _capabilitiesProvider.GetCapabilities(Settings);
 
-            if (capabilities.SupportedBookSearchParameters != null)
+            if (SupportsBookSearch)
             {
                 pageableRequests.Add(GetPagedRequests(MaxPages, Settings.Categories, "book", ""));
             }
