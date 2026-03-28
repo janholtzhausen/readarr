@@ -1,7 +1,7 @@
 using System;
 using FluentMigrator;
 using Microsoft.Extensions.Logging;
-using NLog.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using NUnit.Framework;
 using NzbDrone.Core.Datastore.Migration.Framework;
 
@@ -40,7 +40,7 @@ namespace NzbDrone.Core.Test.Framework
 
         protected override void SetupLogging()
         {
-            Mocker.SetConstant<ILoggerProvider>(Mocker.Resolve<NLogLoggerProvider>());
+            Mocker.SetConstant<ILoggerProvider>(NullLoggerProvider.Instance);
         }
 
         [SetUp]

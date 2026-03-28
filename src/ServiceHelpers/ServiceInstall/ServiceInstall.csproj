@@ -3,7 +3,4 @@
     <OutputType>WinExe</OutputType>
     <TargetFrameworks>net10.0</TargetFrameworks>
   </PropertyGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0''">
-    <PackageReference Include="System.Security.Principal.Windows" />
-  </ItemGroup>
 </Project>
