@@ -183,7 +183,6 @@ function BookIndexPosters(props) {
           showRelativeDates={showRelativeDates}
           shortDateFormat={shortDateFormat}
           timeFormat={timeFormat}
-          style={style}
           bookId={book.id}
           authorId={book.authorId}
           isSelected={selectedState[book.id]}
