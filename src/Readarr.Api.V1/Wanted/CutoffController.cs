@@ -32,13 +32,9 @@ namespace Readarr.Api.V1.Wanted
         public PagingResource<BookResource> GetCutoffUnmetBooks([FromQuery] PagingRequestResource paging, bool includeAuthor = false, bool monitored = true)
         {
             var pagingResource = new PagingResource<BookResource>(paging);
-            var pagingSpec = new PagingSpec<Book>
-            {
-                Page = pagingResource.Page,
-                PageSize = pagingResource.PageSize,
-                SortKey = pagingResource.SortKey,
-                SortDirection = pagingResource.SortDirection
-            };
+            var pagingSpec = pagingResource.MapToPagingSpec<BookResource, Book>("releaseDate", SortDirection.Descending);
+
+            pagingSpec.SortKey = NormalizeSortKey(pagingSpec.SortKey);
 
             if (monitored)
             {
@@ -50,6 +46,16 @@ namespace Readarr.Api.V1.Wanted
             }
 
             return pagingSpec.ApplyToPage(_bookCutoffService.BooksWhereCutoffUnmet, v => MapToResource(v, includeAuthor));
+        }
+
+        private static string NormalizeSortKey(string sortKey)
+        {
+            return sortKey switch
+            {
+                "author.sortName" => "authorMetadata.sortName",
+                "author.sortNameLastFirst" => "authorMetadata.sortNameLastFirst",
+                _ => sortKey
+            };
         }
     }
 }
