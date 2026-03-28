@@ -17,13 +17,28 @@ namespace NzbDrone.Core.Test.Datastore
             TableMapping.Mapper.IsValidSortKey(sortKey).Should().BeFalse();
         }
 
-        //[TestCase("authors.sortName")] TODO: Figure out why Authors table properties don't get mapped
+        [TestCase("author.sortName")]
+        [TestCase("author.sortNameLastFirst")]
+        [TestCase("authors.sortName")]
+        [TestCase("authors.sortNameLastFirst")]
         [TestCase("Id")]
         [TestCase("id")]
         [TestCase("commands.id")]
         public void should_return_true_for_valid_sort_key(string sortKey)
         {
             TableMapping.Mapper.IsValidSortKey(sortKey).Should().BeTrue();
+        }
+
+        [TestCase("author.sortName", "AuthorMetadata", "SortName")]
+        [TestCase("author.sortNameLastFirst", "AuthorMetadata", "SortNameLastFirst")]
+        [TestCase("authors.sortName", "AuthorMetadata", "SortName")]
+        [TestCase("authors.sortNameLastFirst", "AuthorMetadata", "SortNameLastFirst")]
+        public void should_normalize_legacy_author_sort_aliases(string sortKey, string expectedTable, string expectedColumn)
+        {
+            var result = TableMapping.Mapper.GetSortKey(sortKey);
+
+            result.Table.Should().Be(expectedTable);
+            result.Column.Should().Be(expectedColumn);
         }
     }
 }

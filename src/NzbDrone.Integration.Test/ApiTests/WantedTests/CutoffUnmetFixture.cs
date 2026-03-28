@@ -79,6 +79,21 @@ namespace NzbDrone.Integration.Test.ApiTests.WantedTests
 
         [Test]
         [Order(2)]
+        public void cutoff_should_support_legacy_author_sort_keys()
+        {
+            EnsureProfileCutoff(1, Quality.AZW3, true);
+            var author = EnsureAuthor("14586394", "43765115", "Andrew Hunter Murray", true);
+            EnsureBookFile(author, 1, "43765115", Quality.MOBI);
+
+            var bySortName = WantedCutoffUnmet.GetPaged(0, 15, "author.sortName", "asc");
+            var bySortNameLastFirst = WantedCutoffUnmet.GetPaged(0, 15, "author.sortNameLastFirst", "asc");
+
+            bySortName.Records.Should().NotBeEmpty();
+            bySortNameLastFirst.Records.Should().NotBeEmpty();
+        }
+
+        [Test]
+        [Order(2)]
         public void cutoff_should_have_unmonitored_items()
         {
             EnsureProfileCutoff(1, Quality.AZW3, true);

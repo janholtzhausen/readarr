@@ -70,6 +70,20 @@ namespace NzbDrone.Integration.Test.ApiTests.WantedTests
 
         [Test]
         [Order(1)]
+        public void missing_should_support_legacy_author_sort_keys()
+        {
+            EnsureAuthor("14586394", "43765115", "Andrew Hunter Murray", true);
+            EnsureAuthor("383606", "16160797", "Robert Galbraith", true);
+
+            var bySortName = WantedMissing.GetPaged(0, 15, "author.sortName", "asc");
+            var bySortNameLastFirst = WantedMissing.GetPaged(0, 15, "author.sortNameLastFirst", "asc");
+
+            bySortName.Records.Should().NotBeEmpty();
+            bySortNameLastFirst.Records.Should().NotBeEmpty();
+        }
+
+        [Test]
+        [Order(1)]
         public void missing_should_not_have_unmonitored_items()
         {
             EnsureAuthor("14586394", "43765115", "Andrew Hunter Murray", false);

@@ -9,6 +9,17 @@ namespace NzbDrone.Core.Datastore
     public class TableMapper
     {
         private readonly HashSet<string> _allowedOrderBy = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        private static readonly HashSet<string> AuthorMetadataSortColumns = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "sortName",
+            "sortNameLastFirst"
+        };
+
+        private static readonly HashSet<string> AuthorMetadataSortTableAliases = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "author",
+            "authors"
+        };
 
         public TableMapper()
         {
@@ -78,6 +89,8 @@ namespace NzbDrone.Core.Datastore
                 sortKey = split[1];
             }
 
+            (table, sortKey) = NormalizeLegacySortKey(table, sortKey);
+
             if (table != null && !TableMap.Values.Contains(table, StringComparer.OrdinalIgnoreCase))
             {
                 return false;
@@ -105,12 +118,26 @@ namespace NzbDrone.Core.Datastore
                 }
             }
 
+            (table, sortKey) = NormalizeLegacySortKey(table, sortKey);
+
             if (table != null)
             {
                 table = TableMap.Values.FirstOrDefault(x => x.Equals(table, StringComparison.OrdinalIgnoreCase)) ?? table;
             }
 
             sortKey = _allowedOrderBy.FirstOrDefault(x => x.Equals(sortKey, StringComparison.OrdinalIgnoreCase)) ?? sortKey;
+
+            return (table, sortKey);
+        }
+
+        private static (string Table, string Column) NormalizeLegacySortKey(string table, string sortKey)
+        {
+            if (table != null &&
+                AuthorMetadataSortTableAliases.Contains(table) &&
+                AuthorMetadataSortColumns.Contains(sortKey))
+            {
+                return ("AuthorMetadata", sortKey);
+            }
 
             return (table, sortKey);
         }
