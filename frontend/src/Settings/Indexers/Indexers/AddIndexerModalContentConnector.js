@@ -19,8 +19,7 @@ function createMapStateToProps() {
 
       const usenetIndexers = _.filter(schema, { protocol: 'usenet' });
       const torrentIndexers = _.filter(schema, { protocol: 'torrent' });
-      const directDownloadIndexers = _.filter(schema, { protocol: 'directDownload' })
-        .filter((indexer) => indexer.implementation !== 'OceanOfPdf');
+      const directDownloadIndexers = _.filter(schema, { protocol: 'directDownload' });
 
       return {
         isSchemaFetching,
