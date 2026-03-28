@@ -100,6 +100,7 @@ function BookIndexPosters(props) {
     selectedState,
     isEditorActive,
     isSmallScreen,
+    scroller,
     onSelectedChange
   } = props;
 
