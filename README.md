@@ -102,11 +102,26 @@ immediate source this work started from, and also to the original
 [Readarr](https://github.com/Readarr/Readarr) authors and maintainers whose
 project bookshelf itself derives from.
 
+This fork does not claim sole authorship of the codebase. It builds directly on
+the work of the upstream projects and their contributors.
+
 This repository remains a derivative work of:
 
 - [pennydreadful/bookshelf](https://github.com/pennydreadful/bookshelf)
 - [Readarr](https://github.com/Readarr/Readarr)
 - related Servarr ecosystem code where still applicable
+
+## Upstream Contributors
+
+Upstream contributor credit should remain attached to the projects this fork was
+derived from. Rather than freezing an incomplete manual list here, the canonical
+contributor histories are:
+
+- [Readarr contributors](https://github.com/Readarr/Readarr/graphs/contributors)
+- [bookshelf contributors](https://github.com/pennydreadful/bookshelf/graphs/contributors)
+
+Those contributor graphs should be treated as the authoritative upstream
+attribution record for this fork's inherited code.
 
 ## Metadata/Image Source Credit
 
@@ -135,4 +150,5 @@ See [LICENSE.md](./LICENSE.md).
 ## Contributor Attribution
 
 This fork is being maintained by `janholtzhausen`, while preserving explicit
-credit to original Readarr and source-provider work above.
+credit to the original Readarr/bookshelf contributors and source-provider work
+above.
