@@ -1,68 +1,71 @@
 import PropTypes from 'prop-types';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { FixedSizeList, VariableSizeList } from 'react-window';
 import Measure from 'Components/Measure';
 import Scroller from 'Components/Scroller/Scroller';
 import { scrollDirections } from 'Helpers/Props';
 import styles from './VirtualTable.css';
+import WindowScroller from './WindowScrollerShim';
 
-function VirtualTable(props) {
+const ROW_HEIGHT = 38;
+
+function VirtualTableList(props) {
   const {
-    isSmallScreen,
-    className = styles.tableContainer,
+    width,
+    height,
     items,
-    scrollIndex,
-    scrollTop,
-    scroller,
-    header,
-    rowHeight = 38,
+    rowHeight,
+    estimatedRowSize,
+    overscanRowCount,
     rowRenderer,
-    overscanRowCount = 2,
-    onRecompute = () => {},
-    headerHeight = 38
+    onRecompute,
+    scrollIndex,
+    initialScrollTop,
+    externalScrollTop,
+    onChildScroll
   } = props;
 
   const listRef = useRef(null);
-  const [width, setWidth] = useState(0);
-  const [height, setHeight] = useState(0);
   const [scrollRestored, setScrollRestored] = useState(false);
 
   const isVariableHeight = typeof rowHeight === 'function';
   const ListComponent = isVariableHeight ? VariableSizeList : FixedSizeList;
-  const itemSize = useMemo(() => {
-    return isVariableHeight ? rowHeight : rowHeight;
-  }, [isVariableHeight, rowHeight]);
 
   useEffect(() => {
-    if (!width) {
+    if (!listRef.current || !width) {
       return;
     }
 
     onRecompute(width);
 
-    if (listRef.current) {
-      if (isVariableHeight && typeof listRef.current.resetAfterIndex === 'function') {
-        listRef.current.resetAfterIndex(0, true);
-      } else if (typeof listRef.current.resetAfterIndex === 'function') {
-        listRef.current.resetAfterIndex(0, true);
-      }
+    if (typeof listRef.current.resetAfterIndex === 'function') {
+      listRef.current.resetAfterIndex(0, true);
     }
-  }, [items, width, isVariableHeight, onRecompute]);
+  }, [items, width, onRecompute]);
 
   useEffect(() => {
-    if (!listRef.current || scrollTop == null || scrollTop === 0 || scrollRestored) {
+    if (!listRef.current) {
+      return;
+    }
+
+    listRef.current.scrollTo(externalScrollTop);
+  }, [externalScrollTop]);
+
+  useEffect(() => {
+    if (!listRef.current || initialScrollTop == null || initialScrollTop === 0 || scrollRestored) {
       return;
     }
 
     setScrollRestored(true);
-    listRef.current.scrollTo(scrollTop);
-  }, [scrollTop, scrollRestored]);
+    listRef.current.scrollTo(initialScrollTop);
+    onChildScroll({ scrollTop: initialScrollTop });
+  }, [initialScrollTop, onChildScroll, scrollRestored]);
 
   useEffect(() => {
-    if (scrollTop == null || scrollTop === 0) {
+    if (initialScrollTop == null || initialScrollTop === 0) {
       setScrollRestored(false);
     }
-  }, [scrollTop]);
+  }, [initialScrollTop]);
 
   useEffect(() => {
     if (scrollIndex == null || !listRef.current) {
@@ -71,29 +74,6 @@ function VirtualTable(props) {
 
     listRef.current.scrollToItem(scrollIndex, 'start');
   }, [scrollIndex]);
-
-  useEffect(() => {
-    if (!scroller) {
-      return undefined;
-    }
-
-    const currentScroller = scroller;
-    const updateHeight = () => {
-      const nextHeight = Math.max(
-        (isSmallScreen ? window.innerHeight : currentScroller.clientHeight) - headerHeight,
-        typeof rowHeight === 'number' ? rowHeight : 38
-      );
-
-      setHeight(nextHeight);
-    };
-
-    updateHeight();
-    window.addEventListener('resize', updateHeight);
-
-    return () => {
-      window.removeEventListener('resize', updateHeight);
-    };
-  }, [headerHeight, isSmallScreen, rowHeight, scroller]);
 
   const renderRow = ({ index, style }) => {
     return rowRenderer({
@@ -104,34 +84,108 @@ function VirtualTable(props) {
   };
 
   return (
-    <Measure onMeasure={({ width: nextWidth }) => setWidth(nextWidth)}>
-      <Scroller
-        className={className}
-        scrollDirection={scrollDirections.HORIZONTAL}
-      >
-        {header}
-
-        {
-          width > 0 && height > 0 ?
-            <ListComponent
-              ref={listRef}
-              className={styles.tableBodyContainer}
-              style={{
-                width: '100%',
-                overflowX: 'hidden'
-              }}
-              width={width}
-              height={height}
-              itemCount={items.length}
-              itemSize={itemSize}
-              overscanCount={overscanRowCount}
-            >
-              {renderRow}
-            </ListComponent> :
-            null
+    <ListComponent
+      ref={listRef}
+      className={styles.tableBodyContainer}
+      style={{
+        width: '100%',
+        overflowX: 'hidden'
+      }}
+      width={width}
+      height={height}
+      itemCount={items.length}
+      itemSize={rowHeight}
+      estimatedItemSize={estimatedRowSize}
+      overscanCount={overscanRowCount}
+      onScroll={({ scrollOffset, scrollUpdateWasRequested }) => {
+        if (!scrollUpdateWasRequested) {
+          onChildScroll({ scrollTop: scrollOffset });
         }
-      </Scroller>
-    </Measure>
+      }}
+    >
+      {renderRow}
+    </ListComponent>
+  );
+}
+
+VirtualTableList.propTypes = {
+  width: PropTypes.number.isRequired,
+  height: PropTypes.number.isRequired,
+  items: PropTypes.arrayOf(PropTypes.object).isRequired,
+  rowHeight: PropTypes.oneOfType([PropTypes.func, PropTypes.number]).isRequired,
+  estimatedRowSize: PropTypes.number.isRequired,
+  overscanRowCount: PropTypes.number.isRequired,
+  rowRenderer: PropTypes.func.isRequired,
+  onRecompute: PropTypes.func.isRequired,
+  scrollIndex: PropTypes.number,
+  initialScrollTop: PropTypes.number,
+  externalScrollTop: PropTypes.number.isRequired,
+  onChildScroll: PropTypes.func.isRequired
+};
+
+function VirtualTable(props) {
+  const {
+    isSmallScreen,
+    className = styles.tableContainer,
+    items,
+    scrollIndex,
+    scrollTop,
+    scroller,
+    header,
+    rowHeight = ROW_HEIGHT,
+    rowRenderer,
+    overscanRowCount = 2,
+    onRecompute = () => {},
+    headerHeight = 38,
+    estimatedRowSize = ROW_HEIGHT
+  } = props;
+
+  const [width, setWidth] = useState(0);
+
+  return (
+    <WindowScroller
+      scrollElement={isSmallScreen ? undefined : scroller}
+    >
+      {({ height, registerChild, onChildScroll, scrollTop: externalScrollTop }) => {
+        if (!height) {
+          return null;
+        }
+
+        const availableHeight = Math.max(height - headerHeight, estimatedRowSize);
+
+        return (
+          <Measure onMeasure={({ width: nextWidth }) => setWidth(nextWidth)}>
+            <Scroller
+              className={className}
+              scrollDirection={scrollDirections.HORIZONTAL}
+            >
+              {header}
+
+              <div ref={registerChild}>
+                {
+                  width > 0 ?
+                    <VirtualTableList
+                      width={width}
+                      height={availableHeight}
+                      items={items}
+                      rowHeight={rowHeight}
+                      estimatedRowSize={estimatedRowSize}
+                      overscanRowCount={overscanRowCount}
+                      rowRenderer={rowRenderer}
+                      onRecompute={onRecompute}
+                      scrollIndex={scrollIndex}
+                      initialScrollTop={scrollTop}
+                      externalScrollTop={externalScrollTop}
+                      onChildScroll={onChildScroll}
+                    /> :
+                    null
+                }
+              </div>
+            </Scroller>
+          </Measure>
+        );
+      }}
+    </WindowScroller>
   );
 }
 
@@ -147,7 +201,8 @@ VirtualTable.propTypes = {
   rowRenderer: PropTypes.func.isRequired,
   overscanRowCount: PropTypes.number,
   onRecompute: PropTypes.func,
-  headerHeight: PropTypes.number
+  headerHeight: PropTypes.number,
+  estimatedRowSize: PropTypes.number
 };
 
 export default VirtualTable;
