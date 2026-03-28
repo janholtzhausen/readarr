@@ -137,7 +137,7 @@ PackageLinux()
 
     echo "Adding Readarr.Mono to UpdatePackage"
     cp $folder/Readarr.Mono.* $folder/Readarr.Update
-    if [ "$framework" = "net6.0" ]; then
+    if [ "$framework" = "net10.0" ]; then
         cp $folder/Mono.Posix.NETStandard.* $folder/Readarr.Update
         cp $folder/libMonoPosixHelper.* $folder/Readarr.Update
     fi
@@ -165,7 +165,7 @@ PackageMacOS()
 
     echo "Adding Readarr.Mono to UpdatePackage"
     cp $folder/Readarr.Mono.* $folder/Readarr.Update
-    if [ "$framework" = "net6.0" ]; then
+    if [ "$framework" = "net10.0" ]; then
         cp $folder/Mono.Posix.NETStandard.* $folder/Readarr.Update
         cp $folder/libMonoPosixHelper.* $folder/Readarr.Update
     fi
@@ -377,11 +377,11 @@ then
     Build
     if [[ -z "$RID" || -z "$FRAMEWORK" ]];
     then
-        PackageTests "net6.0" "linux-musl-x64"
+        PackageTests "net10.0" "linux-musl-x64"
         if [ "$ENABLE_EXTRA_PLATFORMS" = "YES" ];
         then
-            PackageTests "net6.0" "freebsd-x64"
-            PackageTests "net6.0" "linux-x86"
+            PackageTests "net10.0" "freebsd-x64"
+            PackageTests "net10.0" "linux-x86"
         fi
     else
         PackageTests "$FRAMEWORK" "$RID"
@@ -409,11 +409,11 @@ then
 
     if [[ -z "$RID" || -z "$FRAMEWORK" ]];
     then
-        Package "net6.0" "linux-musl-x64"
+        Package "net10.0" "linux-musl-x64"
         if [ "$ENABLE_EXTRA_PLATFORMS" = "YES" ];
         then
-            Package "net6.0" "freebsd-x64"
-            Package "net6.0" "linux-x86"
+            Package "net10.0" "freebsd-x64"
+            Package "net10.0" "linux-x86"
         fi
     else
         Package "$FRAMEWORK" "$RID"
@@ -423,7 +423,7 @@ fi
 if [ "$INSTALLER" = "YES" ];
 then
     InstallInno
-    BuildInstaller "net6.0" "win-x64"
-    BuildInstaller "net6.0" "win-x86"
+    BuildInstaller "net10.0" "win-x64"
+    BuildInstaller "net10.0" "win-x86"
     RemoveInno
 fi
