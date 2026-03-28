@@ -41,16 +41,8 @@ namespace NzbDrone.Core.Indexers.PubCrawler
         {
             var pubcrawler = (_settings.PubcrawlerUrl ?? string.Empty).TrimEnd('/');
             var encodedQuery = Uri.EscapeDataString(query ?? string.Empty);
-            return $"{pubcrawler}/v1/search/{GetSourceId()}?query={encodedQuery}&recent={recent.ToString().ToLowerInvariant()}";
-        }
-
-        private string GetSourceId()
-        {
-            return (PubCrawlerSource)_settings.Source switch
-            {
-                PubCrawlerSource.OceanOfPdf => "oceanofpdf",
-                _ => "archiveorg"
-            };
+            var sourceId = Uri.EscapeDataString((_settings.Source ?? "archiveorg").Trim());
+            return $"{pubcrawler}/v1/search/{sourceId}?query={encodedQuery}&recent={recent.ToString().ToLowerInvariant()}";
         }
 
         private static IndexerRequest BuildRequest(string url)
