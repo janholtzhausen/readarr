@@ -1012,6 +1012,8 @@
   "TorrentDelay": "Torrent Delay",
   "TorrentDelayHelpText": "Delay in minutes to wait before grabbing a torrent",
   "Torrents": "Torrents",
+  "DirectDownload": "Direct Download",
+  "DirectDownloads": "Direct Downloads",
   "TotalBookCountBooksTotalBookFileCountBooksWithFilesInterp": "{0} books total. {1} books with files.",
   "TotalFileSize": "Total File Size",
   "TotalSpace": "Total Space",

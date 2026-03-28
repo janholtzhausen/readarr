@@ -9,18 +9,18 @@ RUN dotnet publish src/NzbDrone.Console/Readarr.Console.csproj \
       -p:EnforceCodeStyleInBuild=false \
       -p:Optimize=true -p:PublishReadyToRun=true -p:PublishReadyToRunShowWarnings=false \
       -p:DebugSymbols=false -p:DebugType=none -p:EmbedAllSources=false \
-      -p:UseAVX2=true -p:UseAES=true -p:UseSSE=true -p:UseSSE2=true \
+      -p:UseAVX=true -p:UseAES=true -p:UseSSE=true -p:UseSSE2=true \
       -p:UseSSE3=true -p:UseSSSE3=true -p:UseSSE41=true -p:UseSSE42=true \
-      -p:UsePOPCNT=true -p:UseBMI1=true -p:UseBMI2=true -p:UseLZCNT=true \
-      -p:UseFMA=true -p:UsePCLMUL=true -p:UseRDSEED=true -p:UseADX=true \
+      -p:UsePOPCNT=true -p:UsePCLMUL=true \
       --output /app/bin && \
     dotnet publish src/NzbDrone.Mono/Readarr.Mono.csproj \
       --configuration Release --framework net10.0 --runtime linux-x64 \
       --self-contained false -maxcpucount:$(nproc) -p:EnableAnalyzers=false \
       -p:EnforceCodeStyleInBuild=false \
       -p:DebugSymbols=false -p:DebugType=none -p:EmbedAllSources=false \
-      -p:UseAVX2=true -p:UseAES=true -p:UseSSE=true -p:UseSSE2=true \
+      -p:UseAVX=true -p:UseAES=true -p:UseSSE=true -p:UseSSE2=true \
       -p:UseSSE3=true -p:UseSSSE3=true -p:UseSSE41=true -p:UseSSE42=true \
+      -p:UsePOPCNT=true -p:UsePCLMUL=true \
       --output /app/bin
 
 FROM node:20-slim AS frontend-build
@@ -46,13 +46,8 @@ ENV DOTNET_TC_QuickJit=1 \
     DOTNET_TC_QuickJitForLoops=1 \
     DOTNET_TieredPGO=1 \
     DOTNET_ReadyToRun=1 \
-    DOTNET_EnableAVX2=1 \
-    DOTNET_EnableAES=1 \
     DOTNET_EnableAVX=1 \
-    DOTNET_EnableFMA=1 \
-    DOTNET_EnableBMI1=1 \
-    DOTNET_EnableBMI2=1 \
-    DOTNET_EnableLZCNT=1 \
+    DOTNET_EnableAES=1 \
     DOTNET_EnablePOPCNT=1 \
     DOTNET_EnablePCLMUL=1 \
     DOTNET_EnableSSE=1 \
