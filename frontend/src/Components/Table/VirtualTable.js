@@ -6,27 +6,25 @@ import Scroller from 'Components/Scroller/Scroller';
 import { scrollDirections } from 'Helpers/Props';
 import styles from './VirtualTable.css';
 
-function getWindowScrollTopPosition() {
-  return document.documentElement.scrollTop || document.body.scrollTop || 0;
-}
-
 function VirtualTable(props) {
   const {
     isSmallScreen,
-    className,
+    className = styles.tableContainer,
     items,
     scrollIndex,
     scrollTop,
     scroller,
     header,
-    rowHeight,
+    rowHeight = 38,
     rowRenderer,
-    overscanRowCount,
-    onRecompute
+    overscanRowCount = 2,
+    onRecompute = () => {},
+    headerHeight = 38
   } = props;
 
   const listRef = useRef(null);
   const [width, setWidth] = useState(0);
+  const [height, setHeight] = useState(0);
   const [scrollRestored, setScrollRestored] = useState(false);
 
   const isVariableHeight = typeof rowHeight === 'function';
@@ -80,24 +78,22 @@ function VirtualTable(props) {
     }
 
     const currentScroller = scroller;
-    const currentScrollListener = isSmallScreen ? window : currentScroller;
+    const updateHeight = () => {
+      const nextHeight = Math.max(
+        (isSmallScreen ? window.innerHeight : currentScroller.clientHeight) - headerHeight,
+        typeof rowHeight === 'number' ? rowHeight : 38
+      );
 
-    const handleScroll = () => {
-      const { offsetTop = 0 } = currentScroller;
-      const nextScrollTop =
-        (isSmallScreen
-          ? getWindowScrollTopPosition()
-          : currentScroller.scrollTop) - offsetTop;
-
-      listRef.current?.scrollTo(nextScrollTop);
+      setHeight(nextHeight);
     };
 
-    currentScrollListener.addEventListener('scroll', handleScroll);
+    updateHeight();
+    window.addEventListener('resize', updateHeight);
 
     return () => {
-      currentScrollListener.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', updateHeight);
     };
-  }, [isSmallScreen, scroller]);
+  }, [headerHeight, isSmallScreen, rowHeight, scroller]);
 
   const renderRow = ({ index, style }) => {
     return rowRenderer({
@@ -116,17 +112,16 @@ function VirtualTable(props) {
         {header}
 
         {
-          width > 0 ?
+          width > 0 && height > 0 ?
             <ListComponent
               ref={listRef}
               className={styles.tableBodyContainer}
               style={{
                 width: '100%',
-                overflowX: 'hidden',
-                overflowY: 'hidden'
+                overflowX: 'hidden'
               }}
               width={width}
-              height={window.innerHeight}
+              height={height}
               itemCount={items.length}
               itemSize={itemSize}
               overscanCount={overscanRowCount}
@@ -151,13 +146,8 @@ VirtualTable.propTypes = {
   rowHeight: PropTypes.oneOfType([PropTypes.func, PropTypes.number]).isRequired,
   rowRenderer: PropTypes.func.isRequired,
   overscanRowCount: PropTypes.number,
-  onRecompute: PropTypes.func
-};
-
-VirtualTable.defaultProps = {
-  className: styles.tableContainer,
-  overscanRowCount: 2,
-  onRecompute: () => {}
+  onRecompute: PropTypes.func,
+  headerHeight: PropTypes.number
 };
 
 export default VirtualTable;
