@@ -2,7 +2,8 @@
 !src/
 !Logo/
 !package.json
-!yarn.lock
+!package-lock.json
+!.npmrc
 !frontend/
 !tsconfig.json
 src/**/*.Test/

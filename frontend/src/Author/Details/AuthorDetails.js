@@ -436,7 +436,7 @@ class AuthorDetails extends Component {
 
             {
               isPopulated &&
-                <Tabs selectedIndex={this.state.tabIndex} onSelect={this.onTabSelect}>
+                <Tabs selectedIndex={selectedTabIndex} onSelect={this.onTabSelect}>
                   <TabList
                     className={styles.tabList}
                   >

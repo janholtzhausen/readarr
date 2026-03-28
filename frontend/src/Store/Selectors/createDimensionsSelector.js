@@ -1,12 +1,5 @@
-import { createSelector } from 'reselect';
-
 function createDimensionsSelector() {
-  return createSelector(
-    (state) => state.app.dimensions,
-    (dimensions) => {
-      return dimensions;
-    }
-  );
+  return (state) => state.app.dimensions;
 }
 
 export default createDimensionsSelector;

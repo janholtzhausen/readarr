@@ -5,25 +5,31 @@ COPY src/  src/
 COPY Logo/  Logo/
 RUN dotnet publish src/NzbDrone.Console/Readarr.Console.csproj \
       --configuration Release --framework net10.0 --runtime linux-x64 \
-      --self-contained true -maxcpucount:48 -p:EnableAnalyzers=false \
+      --self-contained true -maxcpucount:$(nproc) -p:EnableAnalyzers=false \
       -p:EnforceCodeStyleInBuild=false \
       -p:Optimize=true -p:PublishReadyToRun=true -p:PublishReadyToRunShowWarnings=false \
       -p:DebugSymbols=false -p:DebugType=none -p:EmbedAllSources=false \
+      -p:UseAVX2=true -p:UseAES=true -p:UseSSE=true -p:UseSSE2=true \
+      -p:UseSSE3=true -p:UseSSSE3=true -p:UseSSE41=true -p:UseSSE42=true \
+      -p:UsePOPCNT=true -p:UseBMI1=true -p:UseBMI2=true -p:UseLZCNT=true \
+      -p:UseFMA=true -p:UsePCLMUL=true -p:UseRDSEED=true -p:UseADX=true \
       --output /app/bin && \
     dotnet publish src/NzbDrone.Mono/Readarr.Mono.csproj \
       --configuration Release --framework net10.0 --runtime linux-x64 \
-      --self-contained false -maxcpucount:48 -p:EnableAnalyzers=false \
+      --self-contained false -maxcpucount:$(nproc) -p:EnableAnalyzers=false \
       -p:EnforceCodeStyleInBuild=false \
       -p:DebugSymbols=false -p:DebugType=none -p:EmbedAllSources=false \
+      -p:UseAVX2=true -p:UseAES=true -p:UseSSE=true -p:UseSSE2=true \
+      -p:UseSSE3=true -p:UseSSSE3=true -p:UseSSE41=true -p:UseSSE42=true \
       --output /app/bin
 
 FROM node:20-slim AS frontend-build
 WORKDIR /frontend
-COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile --network-timeout 300000
+COPY package.json package-lock.json .npmrc ./
+RUN npm install --legacy-peer-deps --no-audit --no-fund --loglevel=error
 COPY frontend/ frontend/
 COPY tsconfig.json ./
-RUN yarn build
+RUN npm run build
 
 FROM mcr.microsoft.com/dotnet/runtime-deps:10.0 AS runtime
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -42,8 +48,23 @@ ENV DOTNET_TC_QuickJit=1 \
     DOTNET_ReadyToRun=1 \
     DOTNET_EnableAVX2=1 \
     DOTNET_EnableAES=1 \
+    DOTNET_EnableAVX=1 \
+    DOTNET_EnableFMA=1 \
+    DOTNET_EnableBMI1=1 \
+    DOTNET_EnableBMI2=1 \
+    DOTNET_EnableLZCNT=1 \
+    DOTNET_EnablePOPCNT=1 \
+    DOTNET_EnablePCLMUL=1 \
+    DOTNET_EnableSSE=1 \
+    DOTNET_EnableSSE2=1 \
+    DOTNET_EnableSSE3=1 \
+    DOTNET_EnableSSSE3=1 \
+    DOTNET_EnableSSE41=1 \
+    DOTNET_EnableSSE42=1 \
     DOTNET_GCServer=0 \
     DOTNET_GCConserveMemory=0 \
+    DOTNET_GCHeapHardLimit=0 \
+    DOTNET_GCHeapHardLimitPercent=0 \
     QT_QPA_PLATFORM=offscreen \
     READARR__APP__DATADIR=/config
 VOLUME ["/config", "/books"]

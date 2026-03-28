@@ -1,7 +1,6 @@
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
 import createClientSideCollectionSelector from 'Store/Selectors/createClientSideCollectionSelector';
-import createDeepEqualSelector from 'Store/Selectors/createDeepEqualSelector';
 import BookIndexFooter from './BookIndexFooter';
 
 function createUnoptimizedSelector() {
@@ -27,16 +26,9 @@ function createUnoptimizedSelector() {
   );
 }
 
-function createBookSelector() {
-  return createDeepEqualSelector(
-    createUnoptimizedSelector(),
-    (book) => book
-  );
-}
-
 function createMapStateToProps() {
   return createSelector(
-    createBookSelector(),
+    createUnoptimizedSelector(),
     (book) => {
       return {
         book

@@ -1,9 +1,6 @@
-import { createSelector } from 'reselect';
 import AppState from 'App/State/AppState';
 
-const createIndexerFlagsSelector = createSelector(
-  (state: AppState) => state.settings.indexerFlags,
-  (indexerFlags) => indexerFlags
-);
+const createIndexerFlagsSelector = (state: AppState) =>
+  state.settings.indexerFlags;
 
 export default createIndexerFlagsSelector;

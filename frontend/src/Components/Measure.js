@@ -1,46 +1,26 @@
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
-import ReactMeasure from 'react-measure';
+import React, { useEffect } from 'react';
+import useMeasure from 'react-use-measure';
 
-class Measure extends Component {
+function Measure({ className, style, onMeasure, children, ...otherProps }) {
+  const [ref, bounds] = useMeasure();
 
-  //
-  // Listeners
+  useEffect(() => {
+    if (bounds.width > 0 || bounds.height > 0) {
+      onMeasure(bounds);
+    }
+  }, [bounds, onMeasure]);
 
-  onMeasure = (payload) => {
-    this.props.onMeasure(payload.bounds);
-  };
-
-  //
-  // Render
-
-  render() {
-    const {
-      className,
-      style,
-      onMeasure,
-      children,
-      ...otherProps
-    } = this.props;
-
-    return (
-      <ReactMeasure
-        bounds={true}
-        onResize={this.onMeasure}
-        {...otherProps}
-      >
-        {({ measureRef }) => (
-          <div
-            ref={measureRef}
-            className={className}
-            style={style}
-          >
-            {children}
-          </div>
-        )}
-      </ReactMeasure>
-    );
-  }
+  return (
+    <div
+      ref={ref}
+      className={className}
+      style={style}
+      {...otherProps}
+    >
+      {children}
+    </div>
+  );
 }
 
 Measure.propTypes = {
