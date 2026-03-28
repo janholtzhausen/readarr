@@ -1,3 +1,9 @@
 .grid {
+  display: grid;
   flex: 1 0 auto;
+  align-items: start;
+}
+
+.cell {
+  min-width: 0;
 }

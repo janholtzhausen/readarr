@@ -1,11 +1,11 @@
 import PropTypes from 'prop-types';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { FixedSizeGrid } from 'react-window';
 import BookIndexItemConnector from 'Book/Index/BookIndexItemConnector';
 import Measure from 'Components/Measure';
 import dimensions from 'Styles/Variables/dimensions';
 import getIndexOfFirstCharacter from 'Utilities/Array/getIndexOfFirstCharacter';
 import BookIndexPoster from './BookIndexPoster';
+import styles from './BookIndexPosters.css';
 
 const columnPadding = parseInt(dimensions.authorIndexColumnPadding);
 const columnPaddingSmallScreen = parseInt(dimensions.authorIndexColumnPaddingSmallScreen);
@@ -87,10 +87,6 @@ function calculatePosterHeight(posterWidth) {
   return Math.ceil((400 / 256) * posterWidth);
 }
 
-function getWindowScrollTopPosition() {
-  return document.documentElement.scrollTop || document.body.scrollTop || 0;
-}
-
 function BookIndexPosters(props) {
   const {
     items,
@@ -104,12 +100,11 @@ function BookIndexPosters(props) {
     selectedState,
     isEditorActive,
     isSmallScreen,
-    scroller,
     onSelectedChange
   } = props;
 
-  const gridRef = useRef(null);
   const [width, setWidth] = useState(0);
+  const itemRefs = useRef([]);
   const padding = isSmallScreen ? columnPaddingSmallScreen : columnPadding;
 
   const columnWidth = useMemo(() => {
@@ -127,57 +122,35 @@ function BookIndexPosters(props) {
   }, [posterHeight, sortKey, isSmallScreen, posterOptions]);
 
   useEffect(() => {
-    if (scrollTop && gridRef.current) {
-      gridRef.current.scrollTo({ scrollLeft: 0, scrollTop });
+    if (scrollTop == null) {
+      return;
     }
-  }, [scrollTop]);
+
+    const scrollTarget = isSmallScreen ? window : scroller;
+
+    if (scrollTarget && scrollTop >= 0) {
+      scrollTarget.scrollTo(0, scrollTop);
+    }
+  }, [isSmallScreen, scrollTop, scroller]);
 
   useEffect(() => {
-    if (jumpToCharacter == null || !gridRef.current) {
+    if (jumpToCharacter == null) {
       return;
     }
 
     const index = getIndexOfFirstCharacter(items, sortKey, jumpToCharacter);
 
     if (index != null) {
-      const rowIndex = Math.floor(index / columnCount);
-      gridRef.current.scrollToItem({
-        rowIndex,
-        columnIndex: 0,
-        align: 'start'
+      itemRefs.current[index]?.scrollIntoView({
+        block: 'start'
       });
     }
-  }, [items, sortKey, jumpToCharacter, columnCount]);
+  }, [items, sortKey, jumpToCharacter]);
 
-  useEffect(() => {
-    if (!scroller) {
-      return undefined;
-    }
-
-    const currentScrollListener = isSmallScreen ? window : scroller;
-
-    const handleScroll = () => {
-      const { offsetTop = 0 } = scroller;
-      const nextScrollTop =
-        (isSmallScreen ? getWindowScrollTopPosition() : scroller.scrollTop) - offsetTop;
-
-      gridRef.current?.scrollTo({ scrollLeft: 0, scrollTop: nextScrollTop });
+  const renderedItems = items.map((book, index) => {
+    const cellStyle = {
+      padding
     };
-
-    currentScrollListener.addEventListener('scroll', handleScroll);
-
-    return () => {
-      currentScrollListener.removeEventListener('scroll', handleScroll);
-    };
-  }, [isSmallScreen, scroller]);
-
-  const cellRenderer = ({ columnIndex, rowIndex, style }) => {
-    const bookIdx = rowIndex * columnCount + columnIndex;
-    const book = items[bookIdx];
-
-    if (!book) {
-      return null;
-    }
 
     const {
       detailedProgressBar,
@@ -189,13 +162,14 @@ function BookIndexPosters(props) {
 
     return (
       <div
-        style={{
-          ...style,
-          padding
+        key={book.id}
+        ref={(element) => {
+          itemRefs.current[index] = element;
         }}
+        className={styles.cell}
+        style={cellStyle}
       >
         <BookIndexItemConnector
-          key={book.id}
           component={BookIndexPoster}
           sortKey={sortKey}
           posterWidth={posterWidth}
@@ -217,29 +191,22 @@ function BookIndexPosters(props) {
         />
       </div>
     );
+  });
+
+  const gridStyle = {
+    gridTemplateColumns: `repeat(${columnCount}, minmax(0, ${columnWidth}px))`
   };
 
   return (
     <Measure onMeasure={({ width: nextWidth }) => setWidth(nextWidth)}>
       {
-        width > 0 ?
-          <FixedSizeGrid
-            ref={gridRef}
-            style={{
-              width: '100%',
-              overflowX: 'hidden',
-              overflowY: 'hidden'
-            }}
-            width={width}
-            height={window.innerHeight}
-            columnCount={columnCount}
-            columnWidth={columnWidth}
-            rowCount={Math.ceil(items.length / columnCount)}
-            rowHeight={rowHeight}
-          >
-            {cellRenderer}
-          </FixedSizeGrid> :
+        width > 0 ? (
+          <div className={styles.grid} style={gridStyle}>
+            {renderedItems}
+          </div>
+        ) : (
           <div />
+        )
       }
     </Measure>
   );

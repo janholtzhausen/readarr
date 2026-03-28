@@ -1,6 +1,5 @@
 import PropTypes from 'prop-types';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { FixedSizeList } from 'react-window';
 import BookIndexItemConnector from 'Book/Index/BookIndexItemConnector';
 import Measure from 'Components/Measure';
 import dimensions from 'Styles/Variables/dimensions';
@@ -40,10 +39,6 @@ function calculatePosterHeight(posterWidth) {
   return Math.ceil((400 / 256) * posterWidth);
 }
 
-function getWindowScrollTopPosition() {
-  return document.documentElement.scrollTop || document.body.scrollTop || 0;
-}
-
 function BookIndexOverviews(props) {
   const {
     items,
@@ -62,7 +57,7 @@ function BookIndexOverviews(props) {
     onSelectedChange
   } = props;
 
-  const listRef = useRef(null);
+  const itemRefs = useRef([]);
   const [width, setWidth] = useState(0);
 
   const posterWidth = useMemo(() => {
@@ -75,56 +70,45 @@ function BookIndexOverviews(props) {
   }, [posterHeight, isSmallScreen, overviewOptions]);
 
   useEffect(() => {
-    if (scrollTop && listRef.current) {
-      listRef.current.scrollTo(scrollTop);
+    if (scrollTop == null) {
+      return;
     }
-  }, [scrollTop]);
+
+    const scrollTarget = isSmallScreen ? window : scroller;
+
+    if (scrollTarget && scrollTop >= 0) {
+      scrollTarget.scrollTo(0, scrollTop);
+    }
+  }, [isSmallScreen, scrollTop, scroller]);
 
   useEffect(() => {
-    if (jumpToCharacter == null || !listRef.current) {
+    if (jumpToCharacter == null) {
       return;
     }
 
     const index = getIndexOfFirstCharacter(items, sortKey, jumpToCharacter);
 
     if (index != null) {
-      listRef.current.scrollToItem(index, 'start');
+      itemRefs.current[index]?.scrollIntoView({
+        block: 'start'
+      });
     }
   }, [items, sortKey, jumpToCharacter]);
 
-  useEffect(() => {
-    if (!scroller) {
-      return undefined;
-    }
-
-    const currentScrollListener = isSmallScreen ? window : scroller;
-
-    const handleScroll = () => {
-      const { offsetTop = 0 } = scroller;
-      const nextScrollTop =
-        (isSmallScreen ? getWindowScrollTopPosition() : scroller.scrollTop) - offsetTop;
-
-      listRef.current?.scrollTo(nextScrollTop);
+  const renderedItems = items.map((book, index) => {
+    const rowStyle = {
+      minHeight: rowHeight
     };
-
-    currentScrollListener.addEventListener('scroll', handleScroll);
-
-    return () => {
-      currentScrollListener.removeEventListener('scroll', handleScroll);
-    };
-  }, [isSmallScreen, scroller]);
-
-  const rowRenderer = ({ index, style }) => {
-    const book = items[index];
-
-    if (!book) {
-      return null;
-    }
 
     return (
-      <div style={style}>
+      <div
+        key={book.id}
+        ref={(element) => {
+          itemRefs.current[index] = element;
+        }}
+        style={rowStyle}
+      >
         <BookIndexItemConnector
-          key={book.id}
           component={BookIndexOverview}
           sortKey={sortKey}
           posterWidth={posterWidth}
@@ -144,27 +128,12 @@ function BookIndexOverviews(props) {
         />
       </div>
     );
-  };
+  });
 
   return (
     <Measure onMeasure={({ width: nextWidth }) => setWidth(nextWidth)}>
       {
-        width > 0 ?
-          <FixedSizeList
-            ref={listRef}
-            style={{
-              width: '100%',
-              overflowX: 'hidden',
-              overflowY: 'hidden'
-            }}
-            width={width}
-            height={window.innerHeight}
-            itemCount={items.length}
-            itemSize={rowHeight}
-          >
-            {rowRenderer}
-          </FixedSizeList> :
-          <div />
+        width > 0 ? renderedItems : <div />
       }
     </Measure>
   );
