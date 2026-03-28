@@ -1,6 +1,6 @@
 [tools]
-dotnet = "10.0.104"
-node = "20.19.4"
+dotnet = "10.0.201"
+node = "20"
 
 [env]
 DOTNET_CLI_TELEMETRY_OPTOUT = "1"

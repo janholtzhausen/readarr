@@ -57,7 +57,6 @@
     <PackageVersion Include="System.IO.FileSystem.AccessControl" Version="5.0.0" />
     <PackageVersion Include="System.Reflection.TypeExtensions" Version="4.7.0" />
     <PackageVersion Include="System.Resources.Extensions" Version="10.0.5" />
-    <PackageVersion Include="System.Security.Principal.Windows" Version="5.0.0" />
     <PackageVersion Include="System.ServiceProcess.ServiceController" Version="10.0.5" />
     <PackageVersion Include="TagLibSharp-Lidarr" Version="2.2.0.19" />
   </ItemGroup>
