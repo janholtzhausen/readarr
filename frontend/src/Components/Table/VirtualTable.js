@@ -1,71 +1,88 @@
+import { throttle } from 'lodash';
 import PropTypes from 'prop-types';
 import React, { useEffect, useRef, useState } from 'react';
-import { FixedSizeList, VariableSizeList } from 'react-window';
+import { FixedSizeList } from 'react-window';
 import Measure from 'Components/Measure';
 import Scroller from 'Components/Scroller/Scroller';
 import { scrollDirections } from 'Helpers/Props';
 import styles from './VirtualTable.css';
-import WindowScroller from './WindowScrollerShim';
 
 const ROW_HEIGHT = 38;
 
-function VirtualTableList(props) {
+function getWindowScrollTopPosition() {
+  return document.documentElement.scrollTop || document.body.scrollTop || 0;
+}
+
+function VirtualTable(props) {
   const {
-    width,
-    height,
+    isSmallScreen,
+    className = styles.tableContainer,
     items,
-    rowHeight,
-    estimatedRowSize,
-    overscanRowCount,
-    rowRenderer,
-    onRecompute,
     scrollIndex,
-    initialScrollTop,
-    externalScrollTop,
-    onChildScroll
+    scrollTop,
+    scroller,
+    header,
+    rowHeight = ROW_HEIGHT,
+    rowRenderer,
+    overscanRowCount = 2,
+    onRecompute = () => {},
+    headerHeight = 38
   } = props;
 
   const listRef = useRef(null);
-  const [scrollRestored, setScrollRestored] = useState(false);
-
-  const isVariableHeight = typeof rowHeight === 'function';
-  const ListComponent = isVariableHeight ? VariableSizeList : FixedSizeList;
+  const wrapperRef = useRef(null);
+  const [size, setSize] = useState({ width: 0, height: 0 });
 
   useEffect(() => {
-    if (!listRef.current || !width) {
+    const currentScroller = scroller;
+
+    if (!currentScroller) {
       return;
     }
 
-    onRecompute(width);
+    const nextWidth = currentScroller.clientWidth;
+    const nextHeight = isSmallScreen ? window.innerHeight : currentScroller.clientHeight;
 
-    if (typeof listRef.current.resetAfterIndex === 'function') {
-      listRef.current.resetAfterIndex(0, true);
-    }
-  }, [items, width, onRecompute]);
+    setSize({
+      width: nextWidth,
+      height: nextHeight
+    });
+
+    onRecompute(nextWidth);
+  }, [isSmallScreen, onRecompute, scroller]);
 
   useEffect(() => {
-    if (!listRef.current) {
+    const currentScroller = scroller;
+
+    if (!currentScroller || !listRef.current) {
+      return undefined;
+    }
+
+    const scrollListener = isSmallScreen ? window : currentScroller;
+
+    const handleScroll = throttle(() => {
+      const offsetTop = wrapperRef.current?.offsetTop ?? 0;
+      const nextScrollTop = (isSmallScreen ? getWindowScrollTopPosition() : currentScroller.scrollTop) - offsetTop;
+
+      listRef.current?.scrollTo(Math.max(nextScrollTop, 0));
+    }, 10);
+
+    scrollListener.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+
+    return () => {
+      handleScroll.cancel();
+      scrollListener.removeEventListener('scroll', handleScroll);
+    };
+  }, [isSmallScreen, scroller]);
+
+  useEffect(() => {
+    if (scrollTop == null || scrollTop === 0 || !listRef.current) {
       return;
     }
 
-    listRef.current.scrollTo(externalScrollTop);
-  }, [externalScrollTop]);
-
-  useEffect(() => {
-    if (!listRef.current || initialScrollTop == null || initialScrollTop === 0 || scrollRestored) {
-      return;
-    }
-
-    setScrollRestored(true);
-    listRef.current.scrollTo(initialScrollTop);
-    onChildScroll({ scrollTop: initialScrollTop });
-  }, [initialScrollTop, onChildScroll, scrollRestored]);
-
-  useEffect(() => {
-    if (initialScrollTop == null || initialScrollTop === 0) {
-      setScrollRestored(false);
-    }
-  }, [initialScrollTop]);
+    listRef.current.scrollTo(scrollTop);
+  }, [scrollTop]);
 
   useEffect(() => {
     if (scrollIndex == null || !listRef.current) {
@@ -83,109 +100,56 @@ function VirtualTableList(props) {
     });
   };
 
-  return (
-    <ListComponent
-      ref={listRef}
-      className={styles.tableBodyContainer}
-      style={{
-        width: '100%',
-        overflowX: 'hidden'
-      }}
-      width={width}
-      height={height}
-      itemCount={items.length}
-      itemSize={rowHeight}
-      estimatedItemSize={estimatedRowSize}
-      overscanCount={overscanRowCount}
-      onScroll={({ scrollOffset, scrollUpdateWasRequested }) => {
-        if (!scrollUpdateWasRequested) {
-          onChildScroll({ scrollTop: scrollOffset });
-        }
-      }}
-    >
-      {renderRow}
-    </ListComponent>
-  );
-}
-
-VirtualTableList.propTypes = {
-  width: PropTypes.number.isRequired,
-  height: PropTypes.number.isRequired,
-  items: PropTypes.arrayOf(PropTypes.object).isRequired,
-  rowHeight: PropTypes.oneOfType([PropTypes.func, PropTypes.number]).isRequired,
-  estimatedRowSize: PropTypes.number.isRequired,
-  overscanRowCount: PropTypes.number.isRequired,
-  rowRenderer: PropTypes.func.isRequired,
-  onRecompute: PropTypes.func.isRequired,
-  scrollIndex: PropTypes.number,
-  initialScrollTop: PropTypes.number,
-  externalScrollTop: PropTypes.number.isRequired,
-  onChildScroll: PropTypes.func.isRequired
-};
-
-function VirtualTable(props) {
-  const {
-    isSmallScreen,
-    className = styles.tableContainer,
-    items,
-    scrollIndex,
-    scrollTop,
-    scroller,
-    header,
-    rowHeight = ROW_HEIGHT,
-    rowRenderer,
-    overscanRowCount = 2,
-    onRecompute = () => {},
-    headerHeight = 38,
-    estimatedRowSize = ROW_HEIGHT
-  } = props;
-
-  const [width, setWidth] = useState(0);
+  const availableHeight = Math.max(size.height - headerHeight, rowHeight);
 
   return (
-    <WindowScroller
-      scrollElement={isSmallScreen ? undefined : scroller}
-    >
-      {({ height, registerChild, onChildScroll, scrollTop: externalScrollTop }) => {
-        if (!height) {
-          return null;
+    <Measure
+      onMeasure={() => {
+        if (!scroller) {
+          return;
         }
 
-        const availableHeight = Math.max(height - headerHeight, estimatedRowSize);
+        const nextWidth = scroller.clientWidth;
+        const nextHeight = isSmallScreen ? window.innerHeight : scroller.clientHeight;
 
-        return (
-          <Measure onMeasure={({ width: nextWidth }) => setWidth(nextWidth)}>
-            <Scroller
-              className={className}
-              scrollDirection={scrollDirections.HORIZONTAL}
-            >
-              {header}
+        setSize({
+          width: nextWidth,
+          height: nextHeight
+        });
 
-              <div ref={registerChild}>
-                {
-                  width > 0 ?
-                    <VirtualTableList
-                      width={width}
-                      height={availableHeight}
-                      items={items}
-                      rowHeight={rowHeight}
-                      estimatedRowSize={estimatedRowSize}
-                      overscanRowCount={overscanRowCount}
-                      rowRenderer={rowRenderer}
-                      onRecompute={onRecompute}
-                      scrollIndex={scrollIndex}
-                      initialScrollTop={scrollTop}
-                      externalScrollTop={externalScrollTop}
-                      onChildScroll={onChildScroll}
-                    /> :
-                    null
-                }
-              </div>
-            </Scroller>
-          </Measure>
-        );
+        onRecompute(nextWidth);
       }}
-    </WindowScroller>
+    >
+      <Scroller
+        className={className}
+        scrollDirection={scrollDirections.HORIZONTAL}
+      >
+        {header}
+
+        <div ref={wrapperRef}>
+          {
+            size.width > 0 ?
+              <FixedSizeList
+                ref={listRef}
+                className={styles.tableBodyContainer}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  overflow: 'hidden'
+                }}
+                width={size.width}
+                height={availableHeight}
+                itemCount={items.length}
+                itemSize={rowHeight}
+                overscanCount={overscanRowCount}
+              >
+                {renderRow}
+              </FixedSizeList> :
+              null
+          }
+        </div>
+      </Scroller>
+    </Measure>
   );
 }
 
@@ -197,12 +161,11 @@ VirtualTable.propTypes = {
   scrollTop: PropTypes.number,
   scroller: PropTypes.instanceOf(Element).isRequired,
   header: PropTypes.node.isRequired,
-  rowHeight: PropTypes.oneOfType([PropTypes.func, PropTypes.number]).isRequired,
+  rowHeight: PropTypes.number.isRequired,
   rowRenderer: PropTypes.func.isRequired,
   overscanRowCount: PropTypes.number,
   onRecompute: PropTypes.func,
-  headerHeight: PropTypes.number,
-  estimatedRowSize: PropTypes.number
+  headerHeight: PropTypes.number
 };
 
 export default VirtualTable;
