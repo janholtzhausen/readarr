@@ -101,6 +101,7 @@ function VirtualTable(props) {
   };
 
   const availableHeight = Math.max(size.height - headerHeight, rowHeight);
+  const totalHeight = Math.max(availableHeight, items.length * rowHeight);
 
   return (
     <Measure
@@ -134,11 +135,11 @@ function VirtualTable(props) {
                 className={styles.tableBodyContainer}
                 style={{
                   width: '100%',
-                  height: '100%',
+                  height: totalHeight,
                   overflow: 'visible'
                 }}
                 width={size.width}
-                height={availableHeight}
+                height={totalHeight}
                 itemCount={items.length}
                 itemSize={rowHeight}
                 overscanCount={overscanRowCount}
