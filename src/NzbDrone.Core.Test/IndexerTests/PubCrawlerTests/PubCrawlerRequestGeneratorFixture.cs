@@ -14,8 +14,7 @@ namespace NzbDrone.Core.Test.IndexerTests.PubCrawlerTests
         {
             var settings = new PubCrawlerSettings
             {
-                PubcrawlerUrl = "http://127.0.0.1:18080/",
-                Source = "archiveorg"
+                PubcrawlerUrl = "http://127.0.0.1:18080/"
             };
 
             var subject = new PubCrawlerRequestGenerator(settings);
