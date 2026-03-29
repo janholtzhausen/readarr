@@ -41,8 +41,7 @@ namespace NzbDrone.Core.Indexers.PubCrawler
         {
             var pubcrawler = (_settings.PubcrawlerUrl ?? string.Empty).TrimEnd('/');
             var encodedQuery = Uri.EscapeDataString(query ?? string.Empty);
-            var sourceId = Uri.EscapeDataString((_settings.Source ?? "archiveorg").Trim());
-            return $"{pubcrawler}/v1/search/{sourceId}?query={encodedQuery}&recent={recent.ToString().ToLowerInvariant()}";
+            return $"{pubcrawler}/v1/search?query={encodedQuery}&recent={recent.ToString().ToLowerInvariant()}";
         }
 
         private static IndexerRequest BuildRequest(string url)
