@@ -113,7 +113,7 @@ namespace NzbDrone.Core.Books
 
         protected override bool ShouldDelete(Author local)
         {
-            return !_mediaFileService.GetFilesByAuthor(local.Id).Any();
+            return !local.Monitored && !_mediaFileService.GetFilesByAuthor(local.Id).Any();
         }
 
         protected override void LogProgress(Author local)

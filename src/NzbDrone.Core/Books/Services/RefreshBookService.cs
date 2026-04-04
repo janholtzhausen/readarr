@@ -139,6 +139,16 @@ namespace NzbDrone.Core.Books
 
             if (newAuthor == null)
             {
+                // Before creating a new author entry, check if one with the same name already exists.
+                // Hardcover sometimes uses different IDs for the same person, which would otherwise
+                // create duplicate author entries like "Isaac Asimov (1)".
+                var existingByName = _authorService.FindByName(remote.AuthorMetadata.Value.Name);
+                if (existingByName != null)
+                {
+                    _logger.Debug($"Author {remote.AuthorMetadata.Value.Name} already exists under a different foreign ID ({existingByName.ForeignAuthorId}), skipping duplicate creation");
+                    return;
+                }
+
                 var oldAuthor = local.Author.Value;
                 var addAuthor = new Author
                 {
@@ -156,8 +166,9 @@ namespace NzbDrone.Core.Books
 
         protected override bool ShouldDelete(Book local)
         {
-            // not manually added and has no files
-            return local.AddOptions.AddType != BookAddType.Manual &&
+            // not manually added, not monitored, and has no files
+            return !local.Monitored &&
+                local.AddOptions.AddType != BookAddType.Manual &&
                 !_mediaFileService.GetFilesByBook(local.Id).Any();
         }
 

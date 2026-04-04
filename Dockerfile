@@ -61,7 +61,8 @@ ENV DOTNET_TC_QuickJit=1 \
     DOTNET_GCHeapHardLimit=0 \
     DOTNET_GCHeapHardLimitPercent=0 \
     QT_QPA_PLATFORM=offscreen \
-    READARR__APP__DATADIR=/config
+    READARR__APP__DATADIR=/config \
+    METADATA_URL=https://hardcover.bookinfo.pro
 VOLUME ["/config", "/books"]
 EXPOSE 8787
 ENTRYPOINT ["/app/Readarr", "-nobrowser", "-data=/config"]

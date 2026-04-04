@@ -138,7 +138,7 @@ namespace NzbDrone.Core.MediaFiles.BookImport.Identification
             _logger.Trace("Getting candidates for {0}", author);
             var candidateReleases = new List<CandidateEdition>();
 
-            var bookTag = localEdition.LocalBooks.MostCommon(x => x.FileTrackInfo.BookTitle) ?? "";
+            var bookTag = GetCandidateBookTitle(localEdition);
             if (bookTag.IsNotNullOrWhiteSpace())
             {
                 var possibleBooks = _bookService.GetCandidates(author.AuthorMetadataId, bookTag);
@@ -274,31 +274,14 @@ namespace NzbDrone.Core.MediaFiles.BookImport.Identification
             // If we got an id result, or any overrides are set, stop
             if (seenCandidates.Any() ||
                 idOverrides?.Edition != null ||
-                idOverrides?.Book != null ||
-                idOverrides?.Author != null)
+                idOverrides?.Book != null)
             {
                 yield break;
             }
 
             // fall back to author / book name search
-            var authorTags = new List<string>();
-
-            if (TrackGroupingService.IsVariousAuthors(localEdition.LocalBooks))
-            {
-                authorTags.Add("Various Authors");
-            }
-            else
-            {
-                // the most common list of authors reported by a file
-                var authors = localEdition.LocalBooks.Select(x => x.FileTrackInfo.Authors.Where(a => a.IsNotNullOrWhiteSpace()).ToList())
-                    .GroupBy(x => x.ConcatToString())
-                    .OrderByDescending(x => x.Count())
-                    .First()
-                    .First();
-                authorTags.AddRange(authors);
-            }
-
-            var bookTag = localEdition.LocalBooks.MostCommon(x => x.FileTrackInfo.BookTitle) ?? "";
+            var authorTags = GetCandidateAuthors(localEdition, idOverrides);
+            var bookTag = GetCandidateBookTitle(localEdition);
 
             // If no valid author or book tags, stop
             if (!authorTags.Any() || bookTag.IsNullOrWhiteSpace())
@@ -412,6 +395,53 @@ namespace NzbDrone.Core.MediaFiles.BookImport.Identification
             }
 
             return true;
+        }
+
+        private static string GetCandidateBookTitle(LocalEdition localEdition)
+        {
+            return localEdition.LocalBooks.MostCommon(x => x.FileTrackInfo?.BookTitle) ??
+                   localEdition.LocalBooks.MostCommon(x => x.DownloadClientBookInfo?.BookTitle) ??
+                   localEdition.LocalBooks.MostCommon(x => x.FolderTrackInfo?.BookTitle) ??
+                   string.Empty;
+        }
+
+        private static List<string> GetCandidateAuthors(LocalEdition localEdition, IdentificationOverrides idOverrides)
+        {
+            if (idOverrides?.Author != null)
+            {
+                return new List<string> { idOverrides.Author.Name };
+            }
+
+            if (TrackGroupingService.IsVariousAuthors(localEdition.LocalBooks))
+            {
+                return new List<string> { "Various Authors" };
+            }
+
+            var fileAuthors = localEdition.LocalBooks.Select(x => x.FileTrackInfo?.Authors?.Where(a => a.IsNotNullOrWhiteSpace()).ToList())
+                .Where(x => x?.Any() == true)
+                .GroupBy(x => x.ConcatToString())
+                .OrderByDescending(x => x.Count())
+                .Select(x => x.First())
+                .FirstOrDefault();
+
+            if (fileAuthors?.Any() == true)
+            {
+                return fileAuthors;
+            }
+
+            var downloadClientAuthor = localEdition.LocalBooks.MostCommon(x => x.DownloadClientBookInfo?.AuthorName);
+            if (downloadClientAuthor.IsNotNullOrWhiteSpace())
+            {
+                return new List<string> { downloadClientAuthor };
+            }
+
+            var folderAuthor = localEdition.LocalBooks.MostCommon(x => x.FolderTrackInfo?.AuthorName);
+            if (folderAuthor.IsNotNullOrWhiteSpace())
+            {
+                return new List<string> { folderAuthor };
+            }
+
+            return new List<string>();
         }
     }
 }

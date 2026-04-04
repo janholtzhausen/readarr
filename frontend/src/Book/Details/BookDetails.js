@@ -285,7 +285,7 @@ class BookDetails extends Component {
                 </div>
             }
 
-            <Tabs selectedIndex={this.state.tabIndex} onSelect={this.onTabSelect}>
+            <Tabs selectedIndex={this.state.selectedTabIndex} onSelect={this.onTabSelect}>
               <TabList
                 className={styles.tabList}
               >

@@ -34,6 +34,9 @@ namespace NzbDrone.Core.Profiles.Metadata
         private static readonly Regex PartOrSetRegex = new Regex(@"(?<from>\d+) of (?<to>\d+)|(?<from>\d+)\s?/\s?(?<to>\d+)|(?<from>\d+)\s?-\s?(?<to>\d+)",
             RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
+        private static readonly Regex IssueNumberRegex = new Regex(@"^(.+?)\s*#\d+$",
+            RegexOptions.Compiled);
+
         private readonly IMetadataProfileRepository _profileRepository;
         private readonly IAuthorService _authorService;
         private readonly IBookService _bookService;
@@ -229,6 +232,13 @@ namespace NzbDrone.Core.Profiles.Metadata
             {
                 var split = title.Split('/').Select(x => x.Trim()).ToList();
                 if (split.Count > 1 && split.All(x => titles.Contains(x)))
+                {
+                    return true;
+                }
+
+                // Skip individual comic/serial issues of form "Title #N" when "Title" is already in the list
+                var issueMatch = IssueNumberRegex.Match(title);
+                if (issueMatch.Success && titles.Contains(issueMatch.Groups[1].Value.Trim()))
                 {
                     return true;
                 }
