@@ -338,6 +338,34 @@ namespace NzbDrone.Core.Books
             }
         }
 
+        private void MergeDuplicateAuthors()
+        {
+            var allAuthors = _authorService.GetAllAuthors();
+            var byName = allAuthors.GroupBy(a => a.Name).Where(g => g.Count() > 1);
+
+            foreach (var group in byName)
+            {
+                // Lowest ID = earliest added = canonical
+                var ordered = group.OrderBy(a => a.Id).ToList();
+                var canonical = ordered[0];
+
+                foreach (var duplicate in ordered.Skip(1))
+                {
+                    _logger.Warn($"Merging duplicate author '{duplicate.Name}' (id={duplicate.Id} fid={duplicate.ForeignAuthorId}) into canonical (id={canonical.Id} fid={canonical.ForeignAuthorId})");
+
+                    var books = _bookService.GetBooksByAuthor(duplicate.Id);
+                    books.ForEach(x => x.AuthorMetadataId = canonical.AuthorMetadataId);
+                    _bookService.UpdateMany(books);
+
+                    var historyItems = _historyService.GetByAuthor(duplicate.Id, null);
+                    historyItems.ForEach(x => x.AuthorId = canonical.Id);
+                    _historyService.UpdateMany(historyItems);
+
+                    _authorService.DeleteAuthor(duplicate.Id, false);
+                }
+            }
+        }
+
         private void RefreshSelectedAuthors(List<int> authorIds, bool isNew, CommandTrigger trigger)
         {
             var updated = false;
@@ -380,6 +408,8 @@ namespace NzbDrone.Core.Books
             }
             else
             {
+                MergeDuplicateAuthors();
+
                 var updated = false;
                 var authors = _authorService.GetAllAuthors().OrderBy(c => c.Name).ToList();
                 var authorIds = authors.Select(x => x.Id).ToList();
