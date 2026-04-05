@@ -1,0 +1,34 @@
+FROM ghcr.io/linuxserver/baseimage-alpine:3.21
+
+ENV XDG_CONFIG_HOME="/config/xdg" \
+    COMPlus_EnableDiagnostics=0 \
+    TMPDIR=/run/readarr-temp
+
+RUN apk add -U --upgrade --no-cache \
+    icu-libs \
+    sqlite-libs \
+    xmlstarlet
+
+ARG GIT_BRANCH
+ARG COMMIT_HASH
+ARG BUILD_DATE
+ARG METADATA_URL=https://api.bookinfo.pro
+ARG HARDCOVER
+
+LABEL maintainer="pennydreadful"
+
+ENV METADATA_URL=${METADATA_URL}
+ENV HARDCOVER=${HARDCOVER}
+
+RUN mkdir -p /app/readarr/bin
+
+COPY _output/net10.0/linux-musl-x64 /app/readarr/bin
+COPY _output/UI /app/readarr/bin/UI
+
+RUN echo -e "UpdateMethod=docker\nBranch=${GIT_BRANCH}\nPackageVersion=${COMMIT_HASH}\nPackageAuthor=pennydreadful" > /app/readarr/package_info && \
+    printf "version: ${COMMIT_HASH}\nBuild-date: ${BUILD_DATE}" > /build_version
+
+COPY docker/root/ /
+
+EXPOSE 8787
+VOLUME /config
