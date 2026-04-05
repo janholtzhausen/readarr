@@ -451,4 +451,3 @@ namespace NzbDrone.Core.Books
         }
     }
 }
-
