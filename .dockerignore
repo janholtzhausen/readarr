@@ -1,6 +1,10 @@
 **
 !src/
 !Logo/
+!docker/
+!_output/net10.0/linux-musl-x64/
+!_output/net10.0/linux-musl-arm64/
+!_output/UI/
 !package.json
 !package-lock.json
 !.npmrc
