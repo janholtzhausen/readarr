@@ -68,6 +68,11 @@
     <SelfContained>false</SelfContained>
   </PropertyGroup>
 
+  <!-- Exe projects must bundle the .NET runtime (Alpine does not ship dotnet10) -->
+  <PropertyGroup Condition="'$(ReadarrOutputType)'=='Exe'">
+    <SelfContained>true</SelfContained>
+  </PropertyGroup>
+
   <!-- Set the Product and Version info for our own projects -->
   <PropertyGroup Condition="'$(ReadarrProject)'=='true'">
     <Product>Readarr</Product>

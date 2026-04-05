@@ -6,21 +6,12 @@ IMAGE="$REGISTRY/readarr:latest"
 SERVER="192.168.1.4"
 SERVICE="readarr"
 
-# ── 1. Build backend ──────────────────────────────────────────────────────────
+# ── 1. Build backend + frontend ───────────────────────────────────────────────
 echo "==> Building backend..."
 ./build.sh --backend
-echo "==> Backend built."
-
-# ── 2. Ensure UI exists ───────────────────────────────────────────────────────
-if [ ! -f "_output/UI/index.html" ]; then
-  echo "==> No _output/UI found — extracting from running container on $SERVER..."
-  mkdir -p _output/UI
-  ssh "janh@$SERVER" "docker exec $SERVICE tar -czC /app/UI ." \
-    | tar -xzC _output/UI
-  echo "==> UI extracted ($(ls _output/UI | wc -l | tr -d ' ') files)."
-else
-  echo "==> UI already present, skipping extraction."
-fi
+echo "==> Building frontend..."
+./build.sh --frontend
+echo "==> Build complete."
 
 # ── 3. Build Docker image ─────────────────────────────────────────────────────
 echo "==> Building Docker image $IMAGE ..."
