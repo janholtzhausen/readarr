@@ -145,7 +145,10 @@ namespace NzbDrone.Core.Books
                 var existingByName = _authorService.FindByName(remote.AuthorMetadata.Value.Name);
                 if (existingByName != null)
                 {
-                    _logger.Debug($"Author {remote.AuthorMetadata.Value.Name} already exists under a different foreign ID ({existingByName.ForeignAuthorId}), skipping duplicate creation");
+                    _logger.Debug($"Author {remote.AuthorMetadata.Value.Name} already exists under fid={existingByName.ForeignAuthorId}; redirecting book to canonical author instead of creating duplicate");
+
+                    // Redirect the book to the canonical author so UpdateEntity writes the right AuthorMetadataId
+                    remote.AuthorMetadata = existingByName.Metadata;
                     return;
                 }
 
