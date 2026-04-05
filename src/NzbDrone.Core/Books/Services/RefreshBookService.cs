@@ -13,6 +13,7 @@ using NzbDrone.Core.MediaFiles;
 using NzbDrone.Core.Messaging.Commands;
 using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.MetadataSource;
+using NzbDrone.Core.Parser;
 using NzbDrone.Core.RootFolders;
 
 namespace NzbDrone.Core.Books
@@ -142,10 +143,28 @@ namespace NzbDrone.Core.Books
                 // Before creating a new author entry, check if one with the same name already exists.
                 // Hardcover sometimes uses different IDs for the same person, which would otherwise
                 // create duplicate author entries like "Isaac Asimov (1)".
-                var existingByName = _authorService.FindByName(remote.AuthorMetadata.Value.Name);
+                //
+                // Note: FindByName uses ExclusiveOrDefault which returns null when multiple authors share
+                // the same name (i.e. during an ongoing duplicate situation). Fall back to GetAllAuthors
+                // with FirstOrDefault so we always redirect rather than create yet another duplicate.
+                var remoteName = remote.AuthorMetadata.Value.Name;
+                var remoteCleanName = remoteName.CleanAuthorName();
+
+                // Fast path: the local book's current author is already the right one (Hardcover alias)
+                var localAuthor = local.Author.Value;
+                if (localAuthor != null && localAuthor.CleanName == remoteCleanName)
+                {
+                    _logger.Debug($"Author {remoteName} fid={remote.AuthorMetadata.Value.ForeignAuthorId} is an alias for the local author fid={localAuthor.ForeignAuthorId}; redirecting book to canonical author");
+                    remote.AuthorMetadata = localAuthor.Metadata;
+                    return;
+                }
+
+                // Slower path: search all authors for a name match (handles race-created duplicates)
+                var existingByName = _authorService.GetAllAuthors()
+                    .FirstOrDefault(a => a.CleanName == remoteCleanName);
                 if (existingByName != null)
                 {
-                    _logger.Debug($"Author {remote.AuthorMetadata.Value.Name} already exists under fid={existingByName.ForeignAuthorId}; redirecting book to canonical author instead of creating duplicate");
+                    _logger.Debug($"Author {remoteName} already exists under fid={existingByName.ForeignAuthorId}; redirecting book to canonical author instead of creating duplicate");
 
                     // Redirect the book to the canonical author so UpdateEntity writes the right AuthorMetadataId
                     remote.AuthorMetadata = existingByName.Metadata;

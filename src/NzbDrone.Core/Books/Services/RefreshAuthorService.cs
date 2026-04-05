@@ -338,6 +338,32 @@ namespace NzbDrone.Core.Books
             }
         }
 
+        private void MergeDuplicateBooks()
+        {
+            var allBooks = _bookService.GetAllBooks();
+            var byForeignId = allBooks.GroupBy(b => b.ForeignBookId).Where(g => g.Count() > 1);
+
+            foreach (var group in byForeignId)
+            {
+                var ordered = group.OrderBy(b => b.Id).ToList();
+                var canonical = ordered[0];
+
+                foreach (var duplicate in ordered.Skip(1))
+                {
+                    _logger.Warn($"Merging duplicate book '{duplicate.Title}' (id={duplicate.Id} fid={duplicate.ForeignBookId}) into canonical (id={canonical.Id})");
+
+                    // Redirect history to the canonical book
+                    var historyItems = _historyService.GetByBook(duplicate.Id, null);
+                    historyItems.ForEach(x => x.BookId = canonical.Id);
+                    _historyService.UpdateMany(historyItems);
+
+                    // DeleteMany fires BookDeletedEvent(deleteFiles=false) which unlinks files (EditionId=0)
+                    // so they will re-match on the next rescan
+                    _bookService.DeleteMany(new List<Book> { duplicate });
+                }
+            }
+        }
+
         private void MergeDuplicateAuthors()
         {
             var allAuthors = _authorService.GetAllAuthors();
@@ -408,6 +434,7 @@ namespace NzbDrone.Core.Books
             }
             else
             {
+                MergeDuplicateBooks();
                 MergeDuplicateAuthors();
 
                 var updated = false;
