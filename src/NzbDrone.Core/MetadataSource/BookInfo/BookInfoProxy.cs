@@ -34,6 +34,7 @@ namespace NzbDrone.Core.MetadataSource.BookInfo
         private readonly IHttpClient _httpClient;
         private readonly ICachedHttpResponseService _cachedHttpClient;
         private readonly IGoodreadsSearchProxy _goodreadsSearchProxy;
+        private readonly IIsbnFallbackProxy _isbnFallbackProxy;
         private readonly IAuthorService _authorService;
         private readonly IBookService _bookService;
         private readonly IEditionService _editionService;
@@ -45,6 +46,7 @@ namespace NzbDrone.Core.MetadataSource.BookInfo
         public BookInfoProxy(IHttpClient httpClient,
                              ICachedHttpResponseService cachedHttpClient,
                              IGoodreadsSearchProxy goodreadsSearchProxy,
+                             IIsbnFallbackProxy isbnFallbackProxy,
                              IAuthorService authorService,
                              IBookService bookService,
                              IEditionService editionService,
@@ -55,6 +57,7 @@ namespace NzbDrone.Core.MetadataSource.BookInfo
             _httpClient = httpClient;
             _cachedHttpClient = cachedHttpClient;
             _goodreadsSearchProxy = goodreadsSearchProxy;
+            _isbnFallbackProxy = isbnFallbackProxy;
             _authorService = authorService;
             _bookService = bookService;
             _editionService = editionService;
@@ -120,6 +123,29 @@ namespace NzbDrone.Core.MetadataSource.BookInfo
 
         public Tuple<string, Book, List<AuthorMetadata>> GetBookInfo(string foreignBookId)
         {
+            if (foreignBookId.StartsWith("isbn:", StringComparison.OrdinalIgnoreCase))
+            {
+                var isbn13 = foreignBookId.Substring(5);
+
+                try
+                {
+                    var fallbackBooks = _isbnFallbackProxy.Search(isbn13);
+
+                    if (fallbackBooks.Count > 0)
+                    {
+                        var book = fallbackBooks[0];
+                        var authorMetadata = book.AuthorMetadata.Value;
+                        return Tuple.Create(authorMetadata.ForeignAuthorId, book, new List<AuthorMetadata> { authorMetadata });
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.Warn(ex, "ISBN fallback failed for {0}", foreignBookId);
+                }
+
+                throw new BookNotFoundException(foreignBookId);
+            }
+
             try
             {
                 return PollBook(foreignBookId);
@@ -209,8 +235,38 @@ namespace NzbDrone.Core.MetadataSource.BookInfo
                         }
                     }
 
-                    // to handle isbn / asin
-                    q = slug;
+                    // ISBN-10 must be converted to ISBN-13 — the metadata search index only matches ISBN-13 fields
+                    if (prefix == "isbn" && slug.Length == 10 && slug.All(char.IsDigit))
+                    {
+                        q = ConvertIsbn10ToIsbn13(slug);
+                    }
+                    else
+                    {
+                        q = slug;
+                    }
+
+                    if (prefix == "isbn")
+                    {
+                        var isbn13 = q;
+                        var primaryResults = Search(isbn13, getAllEditions);
+
+                        if (primaryResults.Count > 0)
+                        {
+                            return primaryResults;
+                        }
+
+                        _logger.Debug("Hardcover returned no results for ISBN {0}, trying fallback sources", isbn13);
+
+                        try
+                        {
+                            return _isbnFallbackProxy.Search(isbn13);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.Warn(ex, "ISBN fallback search failed for {0}", isbn13);
+                            return new List<Book>();
+                        }
+                    }
                 }
 
                 return Search(q, getAllEditions);
@@ -989,6 +1045,19 @@ namespace NzbDrone.Core.MetadataSource.BookInfo
             var book = b.Books.OrderByDescending(x => x.RatingCount * x.AverageRating)
                 .FirstOrDefault(x => x.Contributors != null && x.Contributors.Any());
             return book?.Contributors?.FirstOrDefault()?.ForeignId ?? 0;
+        }
+
+        private static string ConvertIsbn10ToIsbn13(string isbn10)
+        {
+            var raw = "978" + isbn10.Substring(0, 9);
+            var sum = 0;
+            for (var i = 0; i < raw.Length; i++)
+            {
+                sum += (raw[i] - '0') * (i % 2 == 0 ? 1 : 3);
+            }
+
+            var check = (10 - (sum % 10)) % 10;
+            return raw + check;
         }
     }
 }
